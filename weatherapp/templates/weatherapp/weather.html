@@ -1,0 +1,113 @@
+{% extends "./index.html" %}
+{% load i18n %}
+{% block title %}
+<title>{% trans 'Узнай погоду в своем городе!' %} </title>
+{% endblock %}
+
+{% block content %} 
+{% load static %}
+
+  <div class="container">
+    <div class="row">
+      <div class="col-8 text-left">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-0" role="alert">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        {% endfor %}
+        {% endif %}    
+      </div>
+      <div class="col-4 mt-3 pb-3 text-right">
+        {% if geoipdata %}
+        <b>{% trans 'Вы находитесть в:' %}</b> <a href="{% url 'weatherapp:forecast' geoipdata.id %}" > {{geoipdata.city}}, {{geoipdata.country_name}} </a>  <br>
+        {% endif %}
+      </div>
+    </div>
+  </div> 
+
+
+  <div class="container mt-2">
+    <div class="row d-flex flex-column justify-content-xl-between flex-lg-row justify-content-center ">
+      <div class="col-lg-5 col-auto">
+        <div class="container mb-3 pb-2 ">
+          <h1>{% trans 'Добавьте город' %}</h1>
+          <form action="{% url 'weatherapp:addcityform' %}" method="POST">
+            {% csrf_token %}
+            {{form.as_p}}
+            <!-- <input type="text" class="form-control" name="city" placeholder="Введите город"> -->
+            <input type="submit" class=" btn btn-danger" name="send" value="{% trans 'Узнать погоду' %}">
+          </form>
+        </div>
+
+        <div class="container my-1 my-xl-5">
+          <p class="mb-1">{% trans 'Популярные пункты' %}</p>
+          <div class="row row-cols-3 align-items-start text-left border rounded bg-white ">
+            {% for city in populars %}
+            <div class="col my-1"> 
+              <a class="ml-3" href="{% url 'weatherapp:addcity' city.0 %}"> {{city.1}} </a>
+            </div>
+            {% endfor %}
+          </div> 
+        </div>
+
+      </div>
+      <div class="col-xl-7 col-auto">
+        <h1>{% trans 'Ваши города' %}</h1>
+        <ul class="list-group">
+        {% for info in city_info %}
+        
+          <li class="list-group-item list-group-item-danger mb-3 pb-0 rounded">
+            <div class="row">
+              <div class="col-3 text-center px-1">
+                <h4 class="mb-3" >{{info.city}}</h4> 
+                <div class="row d-flex justify-content-start flex-row ml-2">
+                  <img src="https://openweathermap.org/img/w/{{info.icon}}.png" alt="{{info.descr}}" title="{{info.descr}}" width="60" height="60">
+                  <p class="text-center mb-1 h5">{{info.temp}} °C</p>
+                </div>
+                <p class="text-center mb-1">{{info.descr}}</p>
+              </div>
+              <div class="col-6">
+                <table class="table table-bordered table-sm mb-0">
+                  <tbody>
+                    <tr>  <td scope="row">{% trans 'Ощущается' %}</td>                  <td>{{info.temp_feels_like}} °C</td>            </tr>
+                    <tr>  <td scope="row">{% trans 'Давление (мм.рт.ст.)' %}</td>       <td>{{info.pressure}}</td>                 </tr>
+                    <tr>  <td scope="row">{% trans 'Влажность' %}</td>                  <td>{{info.hum}} %</td>                       </tr>
+                    <tr>  <td scope="row">{% trans 'Ветер' %}</td>   <td>{% if info.winddir %} {{info.winddir}} , {% endif %} {{info.winds}} {% if info.gust %} - {{info.gust}} {% endif %} {% trans 'м/с' %}</td>  </tr>
+                    {% if info.rain %}
+                    <tr>  <td scope="row">{% trans 'Дождь' %}</td>                     <td>{{info.rain}} {% trans 'мм' %} </td>                       </tr>
+                    {% endif %}
+
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="col-3 p-1 d-flex flex-column justify-content-around mb-2">
+                <a href="{% url 'weatherapp:deletecity' info.cityid %}">
+                  <button class="close" aria-label="{% trans 'Удалить город' %}">
+                    <span aria-hidden="true">&times;</span>
+                  </button> 
+                </a> 
+                <table class="table table-borderless table-sm mb-0 text-center">
+                  <tbody>
+                    <tr>  <td scope="row">{% trans 'Рассвет' %}</td> <td>-</td>    <td>{{info.city_sunrise}}</td>  </tr>
+                    <tr>  <td scope="row">{% trans 'Закат' %}</td>    <td>-</td>    <td>{{info.city_sunset}}</td>   </tr>
+                  </tbody>
+                </table>
+                <a href="{% url 'weatherapp:forecast' info.cityid %}" class="btn btn-primary btn-sm mt-2">{% trans 'Прогноз на 5 дней' %}</a> 
+              </div>
+            </div>
+          </li>
+        {% endfor %}
+        </ul>
+      </div>
+    </div>  
+  </div>
+  
+  {{ form.media }}
+  <link rel="stylesheet" href="{% static 'weatherapp/css/select2-bootstrap4.css' %}" type="text/css">
+{% endblock %}
+  

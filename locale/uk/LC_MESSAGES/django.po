@@ -1,0 +1,215 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-05-04 00:35+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != "
+"11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % "
+"100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || "
+"(n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+
+#: .\weather\settings.py:123
+msgid "Russian"
+msgstr ""
+
+#: .\weather\settings.py:124
+msgid "English"
+msgstr ""
+
+#: .\weather\settings.py:125
+msgid "Ukrainian"
+msgstr ""
+
+#: .\weatherapp\forms.py:12
+msgid "Введите город"
+msgstr "Введіть місто"
+
+#: .\weatherapp\templates\weatherapp\forecast.html:4
+#: .\weatherapp\templates\weatherapp\forecast.html:11
+msgid "Прогноз погоды в городе"
+msgstr "Прогноз погоди у місті"
+
+#: .\weatherapp\templates\weatherapp\forecast.html:14
+msgid "На сутки"
+msgstr "На добу"
+
+#: .\weatherapp\templates\weatherapp\forecast.html:15
+msgid "На 5 дней"
+msgstr "На 5 днів"
+
+#: .\weatherapp\templates\weatherapp\forecast.html:22
+msgid "Время"
+msgstr "Час"
+
+#: .\weatherapp\templates\weatherapp\forecast.html:23
+msgid "Состояние"
+msgstr "Умови"
+
+#: .\weatherapp\templates\weatherapp\forecast.html:24 .\weatherapp\views.py:269
+msgid "Температура, °C"
+msgstr "Температура, °C"
+
+#: .\weatherapp\templates\weatherapp\forecast.html:25 .\weatherapp\views.py:269
+msgid "Давление, мм.рт.ст."
+msgstr "Тиск, мм.рт.ст."
+
+#: .\weatherapp\templates\weatherapp\forecast.html:26
+#: .\weatherapp\templates\weatherapp\main.html:78
+msgid "Влажность"
+msgstr "Вологість"
+
+#: .\weatherapp\templates\weatherapp\forecast.html:27 .\weatherapp\views.py:269
+msgid "Ветер, м/с"
+msgstr "Вітер, м/с"
+
+#: .\weatherapp\templates\weatherapp\forecast.html:28 .\weatherapp\views.py:269
+msgid "Осадки, мм"
+msgstr "Опади, мм"
+
+#: .\weatherapp\templates\weatherapp\index.html:32
+msgid "Главная"
+msgstr "Головна"
+
+#: .\weatherapp\templates\weatherapp\index.html:35
+msgid "Админка"
+msgstr "Адмінка"
+
+#: .\weatherapp\templates\weatherapp\index.html:36
+msgid "Загрузка городов"
+msgstr "Загрузка до бази"
+
+#: .\weatherapp\templates\weatherapp\main.html:4
+msgid "Узнай погоду в своем городе!"
+msgstr "Дізнайся про погоду в своєму місті!"
+
+#: .\weatherapp\templates\weatherapp\main.html:26
+msgid "Вы находитесть в:"
+msgstr "Ви знаходитесь в:"
+
+#: .\weatherapp\templates\weatherapp\main.html:37
+msgid "Добавьте город"
+msgstr "Додайте місто"
+
+#: .\weatherapp\templates\weatherapp\main.html:42
+msgid "Узнать погоду"
+msgstr "Погода зараз"
+
+#: .\weatherapp\templates\weatherapp\main.html:47
+msgid "Популярные пункты"
+msgstr "Популярні місця"
+
+#: .\weatherapp\templates\weatherapp\main.html:59
+msgid "Ваши города"
+msgstr "Ваші міста"
+
+#: .\weatherapp\templates\weatherapp\main.html:76
+msgid "Ощущается"
+msgstr "Відчувається"
+
+#: .\weatherapp\templates\weatherapp\main.html:77
+msgid "Давление (мм.рт.ст.)"
+msgstr "Тиск (мм.рт.ст.)"
+
+#: .\weatherapp\templates\weatherapp\main.html:81
+#: .\weatherapp\templates\weatherapp\main.html:83
+msgid "Ветер"
+msgstr "Вітер"
+
+#: .\weatherapp\templates\weatherapp\main.html:81
+#: .\weatherapp\templates\weatherapp\main.html:83
+msgid "м/с"
+msgstr "м/с"
+
+#: .\weatherapp\templates\weatherapp\main.html:87
+msgid "Дождь"
+msgstr "Дощ"
+
+#: .\weatherapp\templates\weatherapp\main.html:87
+msgid "мм"
+msgstr "мм"
+
+#: .\weatherapp\templates\weatherapp\main.html:96
+msgid "Удалить город"
+msgstr "Видалити місто"
+
+#: .\weatherapp\templates\weatherapp\main.html:102
+msgid "Рассвет"
+msgstr "Світанок"
+
+#: .\weatherapp\templates\weatherapp\main.html:103
+msgid "Закат"
+msgstr "Захід"
+
+#: .\weatherapp\templates\weatherapp\main.html:106
+msgid "Прогноз на 5 дней"
+msgstr "Прогноз на 5 днів"
+
+#: .\weatherapp\views.py:50 .\weatherapp\views.py:66
+msgid "С"
+msgstr "П"
+
+#: .\weatherapp\views.py:52
+msgid "СВ"
+msgstr "ПС"
+
+#: .\weatherapp\views.py:54
+msgid "В"
+msgstr "С"
+
+#: .\weatherapp\views.py:56
+msgid "ЮВ"
+msgstr "ПС"
+
+#: .\weatherapp\views.py:58
+msgid "Ю"
+msgstr "П"
+
+#: .\weatherapp\views.py:60
+msgid "ЮЗ"
+msgstr "ПЗ"
+
+#: .\weatherapp\views.py:62
+msgid "З"
+msgstr "З"
+
+#: .\weatherapp\views.py:64
+msgid "СЗ"
+msgstr "ПЗ"
+
+#: .\weatherapp\views.py:139
+msgid "Ошибка запроса. Попробуйте позже"
+msgstr "Помилка запиту. Спробуй пізніше"
+
+#: .\weatherapp\views.py:141
+msgid "Ошибка соединения"
+msgstr "Помилка з'єднання"
+
+#: .\weatherapp\views.py:143 .\weatherapp\views.py:176
+#: .\weatherapp\views.py:287
+msgid "Несуществующий id. Обратитесь к администратору"
+msgstr "Неіснуючий id. Зверніться до адміністратора"
+
+#: .\weatherapp\views.py:172
+msgid "Вы добавили "
+msgstr "Ви додали "
+
+#: .\weatherapp\views.py:174
+msgid " уже добавлен. Попробуйте другой"
+msgstr " вже додано. Спробуйте інше"
+
+#: .\weatherapp\views.py:184
+msgid " удален"
+msgstr " видалено"

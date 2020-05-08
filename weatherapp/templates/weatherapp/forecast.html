@@ -1,0 +1,68 @@
+{% extends "./index.html" %}
+{% load i18n %}
+{% block title %}
+<title>{% trans 'Прогноз погоды в городе' %} {{city.city_name}}</title>
+{% endblock %}
+
+{% block content %}  
+{% load static %}
+
+  <div class="container mt-4">
+    <h1 class="h1 mb-4" > {% trans 'Прогноз погоды в городе' %} {{city.city_name}} </h1> 
+    <nav>
+      <div class="nav nav-tabs" id="nav-tab" role="tablist">
+        <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">{% trans 'На сутки' %}</a>
+        <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">{% trans 'На 5 дней' %}</a>
+      </div>
+    </nav>
+    <div class="tab-content" id="nav-tabContent">
+      <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+        <div class="row" >
+          <div class="col-4 col-xl pr-0">
+            <li class="list-group-item d-flex justify-content-start border-right-0 border-top-0"><b>{% trans 'Время' %}</b></li>
+            <li style="height:51px ;" class="list-group-item d-flex justify-content-start border-right-0"><b>{% trans 'Состояние' %}</b></li>
+            <li class="list-group-item d-flex justify-content-start border-right-0 "><b>{% trans 'Температура, °C' %}</b></li>
+            <li class="list-group-item d-flex justify-content-start border-right-0 "><b>{% trans 'Давление, мм.рт.ст.' %}</b></li>
+            <li class="list-group-item d-flex justify-content-start border-right-0 "><b>{% trans 'Влажность' %}, %</b></li>
+            <li class="list-group-item d-flex justify-content-start border-right-0 "><b>{% trans 'Ветер, м/с' %}</b></li>
+            <li class="list-group-item d-flex justify-content-start border-right-0 "><b>{% trans 'Осадки, мм' %}</b></li>
+          </div>
+          {% for cond in frcst %}
+          <div class="col-2 col-xl pr-0 pl-0">
+            <li class="list-group-item d-flex justify-content-center border-right-0 border-top-0"><b>{{cond.timetext}}</b></li>
+            <li class="list-group-item d-flex justify-content-center border-right-0 p-0"><img src="https://openweathermap.org/img/w/{{cond.icon}}.png" alt="{{cond.descr}}" title="{{cond.descr}}"></li>
+            <li class="list-group-item d-flex justify-content-center border-right-0">{{cond.temp}}</li>
+            <li class="list-group-item d-flex justify-content-center border-right-0">{{cond.pressure}}</li>
+            <li class="list-group-item d-flex justify-content-center border-right-0">{{cond.humidity}}</li>
+            <li class="list-group-item d-flex justify-content-center border-right-0">{{cond.winddir}}, {{cond.winds}}</li>
+            {% if cond.rain %}
+            <li class="list-group-item d-flex justify-content-center border-right-0">{{cond.rain}}</li>
+            {% else %}
+            <li class="list-group-item d-flex justify-content-center border-right-0"> - </li>
+            {% endif %}
+            
+            
+          </div>
+          {% endfor %}
+        </div>
+        
+      </div>
+      <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+        <div id="myChart">
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="{% static 'weatherapp/js/zingchart.min.js' %}"></script>
+  <script src="{% static 'weatherapp/js/chartconfig.js' %} "></script>
+  <script>
+  zingchart.render({ 
+    id : 'myChart', 
+    data : chartConfig({{graph.xstart|safe}}, {{graph.xfinish|safe}}, {{graph.temp_list|safe}}, {{graph.rain_list|safe}}, {{graph.pressure_list|safe}}, {{graph.winds_list|safe}}, {{graph.axis|safe}} ),
+    height: 800,
+    width: "100%" 
+  });
+  </script>
+  {% endblock %}
+
+

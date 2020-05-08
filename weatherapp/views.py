@@ -1,0 +1,354 @@
+from .models import City, Forecast, Popularity
+from .forms import CityForm
+
+from django.shortcuts import render
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.contrib.gis.geoip2 import GeoIP2
+from django.contrib import messages
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import get_language
+#from django.db import connection
+
+import requests
+from dal import autocomplete
+from datetime import datetime, timedelta
+import pandas as pd
+
+
+class CityAutocomplete(autocomplete.Select2QuerySetView):       #autocomplete field class
+    def get_queryset(self):
+        qs = City.objects.all()
+        if self.q:
+            qs = qs.filter(name__istartswith=self.q)
+        return qs
+
+def GetCityIdbyName(cityname):
+    try:     
+        res = City.objects.filter(name_en=cityname)
+        return res[0].id
+    except:
+        pass
+         
+
+def GetGeoIPCity(ip):
+    g = GeoIP2()                            # geoipdict = {'city': 'Kharkiv', 'continent_code': 'EU', 'continent_name': 'Europe', 
+                                            #'country_code': 'UA', 'country_name': 'Ukraine', 'dma_code': None,
+                                            # 'is_in_european_union': False, 'latitude': 49.982, 'longitude': 36.2566, 
+                                            # 'postal_code': '61145', 'region': '63', 'time_zone': 'Europe/Kiev'} 
+    try:
+        geoipdict = g.city(ip)
+    except:
+        geoipdict = {}            
+    return geoipdict
+
+def getwinddir(spd):
+    if 0 <= spd <= 22.5:
+        spdstr = _('С')
+    elif 22.5 < spd <= 67.5: 
+        spdstr = _('СВ')
+    elif 67.5 < spd <= 112.5: 
+        spdstr = _('В')
+    elif 112.5 < spd <= 157.5: 
+        spdstr = _('ЮВ')
+    elif 157.5 < spd <= 202.5: 
+        spdstr = _('Ю')
+    elif 202.5 < spd <= 247.5: 
+        spdstr = _('ЮЗ')
+    elif 247.5 < spd <= 292.5: 
+        spdstr = _('З')
+    elif 292.5 < spd <= 337.5: 
+        spdstr = _('СЗ')
+    elif 337.5 < spd <= 360: 
+        spdstr = _('С')
+    else:
+        spdstr = ''
+    return spdstr
+
+def getpopulars():
+    l = Popularity.objects.filter(pickeddate__gt=timezone.now() - timedelta(days=30))[:100]
+    l = list(set(l.values_list('city', flat=True)))
+    c = []
+    for i in l:
+        t = City.objects.get(pk=i)
+        c.append([i, t.name])
+    return c
+    
+
+def index(request):
+
+    current_lang = get_language()
+    url = 'https://api.openweathermap.org/data/2.5/weather'
+    prms = {'id' : '',
+            'units' : 'metric',
+            'lang' : current_lang,
+            'appid' : '130647fb83349ee17494923a6e848cc8' #API key
+    }
+
+    #c_ip = request.META['REMOTE_ADDR'] 
+    c_ip = request.META.get('HTTP_X_REAL_IP')   #client ip discovery for pythonanywhere
+    #c_ip = ''      #ip for django dev server
+
+    added_cities = request.session.get('added_cities', [])
+
+    geoipdata = GetGeoIPCity(c_ip)
+    if geoipdata:           #if theres geoip data for users ip
+        if GetCityIdbyName(geoipdata['city']):      #looking for geoip cityname in db
+            geoipdata['id'] = GetCityIdbyName(geoipdata['city'])
+            if geoipdata['id'] not in added_cities:         #viewing geoip city by default
+                added_cities = [geoipdata['id']] + added_cities
+                request.session['added_cities'] = added_cities
+    
+    #print(request.session['added_cities'])
+
+    view_cities = []
+    for cityid in added_cities:
+        try:
+            c = City.objects.get(pk=cityid)
+            prms['id'] = c.opw_id     # OPW id
+            try:
+                res = requests.get(url, params=prms)
+                #print(res.url)
+                if res.status_code == 200:
+                    res2 = res.json()
+                    #print(res2)
+                    winfo = {
+                        'cityid': cityid,
+                        'city': c.name, #res2['name'], 
+                        'descr': res2['weather'][0]['description'],
+                        'icon': res2['weather'][0]['icon'],
+                        'temp': res2['main']['temp'],
+                        'temp_feels_like': res2['main']['feels_like'],
+                        'pressure': round(res2['main']['pressure'] * 0.75006375541921),
+                        'hum':res2['main']['humidity'],
+                        'winds': round(res2['wind']['speed']),
+                        'city_sunrise' : datetime.utcfromtimestamp(res2['sys']['sunrise'] + res2['timezone']).strftime("%H:%M") ,
+                        'city_sunset' : datetime.utcfromtimestamp(res2['sys']['sunset'] + res2['timezone']).strftime("%H:%M")      
+                    }
+                    if 'deg' in res2['wind'] :
+                        winfo['winddir'] = getwinddir( res2['wind']['deg'] )
+
+                    if 'gust' in res2['wind'] and round(res2['wind']['gust']) > round(res2['wind']['speed']):
+                        winfo['gust'] = round(res2['wind']['gust'])
+                    
+                    if 'rain' in res2 :
+                        if '1h' in res2['rain']:
+                            winfo['rain'] = res2['rain']['1h']
+                        else:
+                            winfo['rain'] = res2['rain']['3h']
+                    view_cities.append(winfo)
+                else:
+                    messages.add_message(request, messages.WARNING , _('Ошибка запроса. Попробуйте позже'))
+            except requests.ConnectionError:
+                messages.add_message(request, messages.WARNING , _('Ошибка соединения'))
+        except City.DoesNotExist:
+            messages.add_message(request, messages.WARNING , _('Несуществующий id. Обратитесь к администратору'))
+
+
+    form = CityForm()
+
+    populars = getpopulars()
+
+    context = { 'city_info' : view_cities, 
+                'geoipdata' : geoipdata,  
+                'form' : form ,
+                'populars' : populars  } 
+
+    return render(request, 'weatherapp/weather.html', context)
+
+def addcityform(request):
+    if request.method == 'POST' :
+        return HttpResponseRedirect( reverse('weatherapp:addcity', args=(int(request.POST['picked_city'] ), ) ) )  
+    else:
+        return HttpResponseRedirect( reverse('weatherapp:index' ) )
+
+
+def addcity(request, city_id):
+    added_cities = request.session.get('added_cities', [])
+    try:
+        c = City.objects.get(pk = city_id)
+        if c.pk not in added_cities:
+            added_cities.append(c.pk)
+            request.session['added_cities'] = added_cities
+            Popularity(city = c).save()
+            messages.add_message(request, messages.SUCCESS , str(_('Вы добавили ')) + c.name)
+        else:
+            messages.add_message(request, messages.INFO, c.name + str(_(' уже добавлен. Попробуйте другой')))
+    except City.DoesNotExist:
+            messages.add_message(request, messages.WARNING , _('Несуществующий id. Обратитесь к администратору'))
+    return HttpResponseRedirect(reverse('weatherapp:index'))
+
+def deletecity(request, city_id):
+    added_cities = request.session.get('added_cities', [])
+    if city_id in added_cities:
+        added_cities.remove(city_id)
+        request.session['added_cities'] = added_cities
+        messages.add_message(request, messages.INFO, City.objects.get(pk = city_id).name + str(_(' удален')))
+    return HttpResponseRedirect(reverse('weatherapp:index'))
+
+def getforecast(c):
+    if c.forecast_set.all().order_by('-loadingtime').exists():
+        f = c.forecast_set.all().order_by('-loadingtime')[0]
+        if f.is_actual() == True:
+            res = f.forecastdata
+            print('db')
+        else:
+            print('db to web')
+            res = getOPWforecast(c)
+    else:
+        print('web')
+        res = getOPWforecast(c)
+    return res
+    
+
+def getOPWforecast(c):
+    current_lang = get_language()
+    url = 'https://api.openweathermap.org/data/2.5/forecast'
+    prms = {'id' : c.opw_id,
+            'units' : 'metric',
+            'lang' : current_lang,
+            'appid' : '130647fb83349ee17494923a6e848cc8' #API key
+    }
+
+    res = requests.get(url, params=prms).json()
+    frct = Forecast(city=c, forecastdata=res)
+    frct.save()
+    return res
+
+
+def forecast(request, city_id): 
+    try:
+        c = City.objects.get(pk=city_id)
+        res = getforecast(c)
+        
+        city = {    'city_timeshift' : res['city']['timezone'],
+                    'city_name' : c.name, # res['city']['name'],
+                    'city_sunrise' : datetime.utcfromtimestamp(res['city']['sunrise'] + res['city']['timezone']).strftime("%H:%M") ,
+                    'city_sunset' : datetime.utcfromtimestamp(res['city']['sunset'] + res['city']['timezone']).strftime("%H:%M")        }
+        
+        forecast = []
+
+        for datapoint in res['list']:
+            winfo = {
+                    'timetext': datetime.utcfromtimestamp(datapoint['dt'] + city['city_timeshift']).strftime('%H:%M') ,
+                    'datetext': datetime.utcfromtimestamp(datapoint['dt'] + city['city_timeshift']).strftime('%d.%m') ,
+                    'timeunix': (datapoint['dt'] + city['city_timeshift']) * 1000 ,
+                    'temp': datapoint['main']['temp'],
+                    'icon': datapoint['weather'][0]['icon'],
+                    'pressure': round(datapoint['main']['pressure'] * 0.75006375541921),
+                    'humidity': datapoint['main']['humidity'],
+                    'descr': datapoint['weather'][0]['description'],
+                    'winds': datapoint['wind']['speed'],
+                    'winddir': getwinddir( datapoint['wind']['deg'] ) ,
+                }
+            if 'rain' in datapoint :
+                if '1h' in datapoint['rain']:
+                    winfo['rain'] = datapoint['rain']['1h']
+                else:
+                    winfo['rain'] = datapoint['rain']['3h']
+            else:
+                winfo['rain'] = 0
+
+            forecast.append(winfo)
+
+        oneday = forecast[:9]
+
+        forecastdf = pd.DataFrame(forecast)
+
+        tempdata = list(forecastdf['temp'])
+        timedata = list(forecastdf['timeunix'])
+        raindata = list(forecastdf['rain'])
+        pressuredata = list(forecastdf['pressure'])
+        windsdata = list(forecastdf['winds'])
+
+        xstart = timedata[0] // 86400000 * 86400000 
+        if timedata[-1] % 86400000 == 0:
+             xfinish = timedata[-1]
+        else:
+            xfinish = timedata[-1] // 86400000 * 86400000 + 86400000
+
+        temp_list = [ [timedata[i], tempdata[i]] for i in range(0, len(tempdata)) ] 
+        rain_list = [ [timedata[i], raindata[i]] for i in range(0, len(raindata)) ] 
+        pressure_list = [ [timedata[i], pressuredata[i]] for i in range(0, len(pressuredata)) ]
+        winds_list = [ [timedata[i], windsdata[i]] for i in range(0, len(windsdata)) ]
+        axis = [ _('Температура, °C') , _('Осадки, мм')  , _('Давление, мм.рт.ст.'), _('Ветер, м/с')]
+        
+        graph = { 'xstart' : xstart,
+                'xfinish' : xfinish,
+                'temp_list' : temp_list,
+                'rain_list' : rain_list,  
+                'pressure_list' : pressure_list,
+                'winds_list' : winds_list,
+                'axis' : axis
+                }
+
+        context = {
+            'city': city,
+            'frcst': oneday,
+            'graph': graph
+        }
+
+        return render(request, 'weatherapp/forecast.html', context) 
+    except City.DoesNotExist:
+        messages.add_message(request, messages.WARNING , _('Несуществующий id. Обратитесь к администратору')) 
+        return HttpResponseRedirect( reverse('weatherapp:index' ) )  
+
+def dosm(request):
+    '''
+    qs = City.objects.all()
+    i = 0
+    for city in qs:
+        i += 1
+        city.name_uk = getYAtranslation(city.name_en, 'en-uk')
+        city.save()
+        print(str(i) +' ' + city.name_ru)
+    '''
+
+    '''
+    with open('city.list.json', 'r', encoding='utf-8') as read_file:
+        data = json.load(read_file)
+    
+    for city_in_data in data:
+        if city_in_data['country'] == 'UA':
+            newcity = City.objects.create(
+                name=city_in_data['name'], 
+                opw_id = city_in_data['id'], 
+                country = city_in_data['country'], 
+                state = city_in_data['state'], 
+                coord_lon = city_in_data['coord']['lon'], 
+                coord_lat = city_in_data['coord']['lat']
+                )
+            newcity.save()
+    '''
+
+    '''
+    with connection.cursor() as cursor:
+        cursor.execute("UPDATE weatherapp_city SET name_en = name_ru, name_uk = name_ru ")
+        row = cursor.fetchone()
+    '''
+    return HttpResponseRedirect(reverse('weatherapp:index'))
+
+
+def getYAtranslation(text, direction):
+    #yandex translate API
+    url = 'https://translate.yandex.net/api/v1.5/tr.json/translate'
+    prms = {'key' : 'trnsl.1.1.20200505T224605Z.d3008b6d6a264e08.c3faf34dbf3b21ba93b54ef276fef996495a1c31', #api key
+            'text' : text,
+            'lang' : direction,       
+    }
+    res = requests.get(url, params=prms)
+    if res.status_code == 200:
+        res2 = res.json()
+        return res2['text'][0]
+
+
+
+
+
+
+
+
+
+
+

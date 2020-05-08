@@ -1,0 +1,6 @@
+/.backup
+/.vscode
+/env
+.env
+city.list.json
+*.mmdb
