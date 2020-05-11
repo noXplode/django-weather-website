@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.gis.geoip2 import GeoIP2
+
 from django.contrib import messages
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -15,13 +16,16 @@ import requests
 from dal import autocomplete
 from datetime import datetime, timedelta
 import pandas as pd
+import json
+import csv
+import pycountry
 
 
 class CityAutocomplete(autocomplete.Select2QuerySetView):       #autocomplete field class
     def get_queryset(self):
         qs = City.objects.all()
         if self.q:
-            qs = qs.filter(name__istartswith=self.q)
+            qs = qs.filter(name_en__istartswith=self.q)|qs.filter(name_ru__istartswith=self.q.capitalize())|qs.filter(name_uk__istartswith=self.q.capitalize())
         return qs
 
 def GetCityIdbyName(cityname):
@@ -295,42 +299,66 @@ def forecast(request, city_id):
         return HttpResponseRedirect( reverse('weatherapp:index' ) )  
 
 def dosm(request):
-    '''
-    qs = City.objects.all()
-    i = 0
-    for city in qs:
-        i += 1
-        city.name_uk = getYAtranslation(city.name_en, 'en-uk')
-        city.save()
-        print(str(i) +' ' + city.name_ru)
-    '''
+    return HttpResponseRedirect(reverse('weatherapp:index'))
+   
 
-    '''
+def checkjson():    #checks city.list.json, gets {'county_alpha2_code': {'count': number, 'country_name' : str}}
+    cntrs = {}
+    for city_in_data in data:
+        t = city_in_data['country'] 
+        if t in cntrs:
+            cntrs[t]['count'] += 1
+        else:
+            cntrs[t] = {'count' : 1, 'name' : ''}
+            
+    for ccode in cntrs.keys():
+        t = pycountry.countries.get(alpha_2=ccode)
+        if t:
+            cntrs[ccode]['name'] = t.name
+    print(cntrs)   
+    
+def citiesfilldb():
     with open('city.list.json', 'r', encoding='utf-8') as read_file:
         data = json.load(read_file)
-    
-    for city_in_data in data:
-        if city_in_data['country'] == 'UA':
-            newcity = City.objects.create(
-                name=city_in_data['name'], 
-                opw_id = city_in_data['id'], 
-                country = city_in_data['country'], 
-                state = city_in_data['state'], 
-                coord_lon = city_in_data['coord']['lon'], 
-                coord_lat = city_in_data['coord']['lat']
-                )
-            newcity.save()
-    '''
 
-    '''
+    with open('cities15000.txt', 'r' , newline='', encoding='utf-8') as read_file:  #cities15000.txt from geonames.org   https://download.geonames.org/export/dump/
+        csvdata = csv.reader(read_file, delimiter='\t')
+        l = list(csvdata)
+    
+    clist = ['GB', 'GR', 'FI', 'LV', 'LT', 'SE', 'BY', 'PL', 'NO', 'PT', 'AT', 'DK', 'CH', 'NL', 'BE', 'LU']    #countrycode ALPHA-2 format https://www.iban.com/country-codes
+    for city_data in data:
+        if city_data['country'] in clist :
+            for line in l:
+                if line[1] == city_data['name'] and line[8] == city_data['country'] and int(line[14]) > 50000:
+                    print( f'adding {city_data["name"]} - {int(line[14])}' )
+                    newcity = City.objects.create(
+                        name=city_data['name'], 
+                        opw_id = city_data['id'], 
+                        country = city_data['country'], 
+                        state = city_data['state'], 
+                        coord_lon = city_data['coord']['lon'], 
+                        coord_lat = city_data['coord']['lat']
+                        )
+                    newcity.save()
+
+
+def emptynamesfill():   #больше не нужно, т.к. все три поля заполняются изначально
     with connection.cursor() as cursor:
         cursor.execute("UPDATE weatherapp_city SET name_en = name_ru, name_uk = name_ru ")
         row = cursor.fetchone()
-    '''
-    return HttpResponseRedirect(reverse('weatherapp:index'))
 
+def translatecities(): 
+    qs = City.objects.filter(country='CH')
+    i = 0
+    for city in qs:
+        i += 1
+        city.name_ru = getYAtranslation(city.name_en, 'en-ru')
+        city.name_uk = getYAtranslation(city.name_en, 'en-uk')
+        city.save()
+        print(str(i) +' ' + city.name_ru +' ' + city.name_uk)
+       
 
-def getYAtranslation(text, direction):
+def getYAtranslation(text, direction):  #direction format 'en-ru'
     #yandex translate API
     url = 'https://translate.yandex.net/api/v1.5/tr.json/translate'
     prms = {'key' : 'trnsl.1.1.20200505T224605Z.d3008b6d6a264e08.c3faf34dbf3b21ba93b54ef276fef996495a1c31', #api key
@@ -342,6 +370,26 @@ def getYAtranslation(text, direction):
         res2 = res.json()
         return res2['text'][0]
 
+def citypopulation(cityname, countrycode):  #countrycode ALPHA-2 format https://www.iban.com/country-codes
+    #gets city population via geonames.org API   http://api.geonames.org/searchJSON?q=london&maxRows=10&username=demo
+    #geonames.org has 1000 requests per hour, 12000 per day restriction for free accounts
+    url = 'http://api.geonames.org/searchJSON'
+    prms = {'name_equals' : cityname, 
+            'maxRows' : 1,
+            'country' : countrycode, 
+            'username' : 'corbendallas'  ,
+            'featureClass' : 'P'    
+    }
+    try:
+        res = requests.get(url, params=prms)
+        res2 = res.json()
+        population = res2['geonames'][0]['population']
+        print( f'{cityname} - { population }' )
+        return population
+    except:
+        print(res.text)
+        return 0
+    
 
 
 

@@ -4,3 +4,5 @@
 .env
 city.list.json
 *.mmdb
+cities15000.txt
+countries.txt

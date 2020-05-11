@@ -10,8 +10,11 @@ class City(models.Model):
     coord_lon = models.DecimalField(max_digits=12, decimal_places=6, default=0)
     coord_lat = models.DecimalField(max_digits=12, decimal_places=6, default=0)
 
+    class Meta:
+        ordering = ['name']
+
     def __str__(self):
-        return self.name
+        return f'{self.name}, {self.country} ({round(self.coord_lon,2)}, {round(self.coord_lat,2)})'
 
 class Forecast(models.Model):
     city = models.ForeignKey(City, on_delete=models.CASCADE, null=False)
@@ -22,7 +25,7 @@ class Forecast(models.Model):
         ordering = ['-loadingtime']
 
     def __str__(self):
-        return f'{self.cityid.name} {self.loadingtime.strftime("%d/%m/%Y, %H:%M:%S")}'
+        return f'{self.city.name} {self.loadingtime.strftime("%d/%m/%Y, %H:%M:%S")}'
 
     def is_actual(self):
         timediff = timezone.now() - self.loadingtime
@@ -39,7 +42,7 @@ class Popularity(models.Model):
         ordering = ['-pickeddate']
 
     def __str__(self):
-        return self.cityid.name
+        return self.city.name
 
    
 

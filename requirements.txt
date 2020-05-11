@@ -5,3 +5,4 @@ django-autocomplete-light==3.5.0
 pandas==1.0.3
 django-modeltranslation==0.15
 python-dotenv==0.13.0
+pycountry==19.8.18

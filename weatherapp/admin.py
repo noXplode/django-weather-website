@@ -26,7 +26,7 @@ class ExportCsvMixin:   #model csv export class
     export_as_csv.short_description = " CSV Export Selected"
 
 class CityAdmin(TranslationAdmin, ExportCsvMixin):
-    list_display = ('name', 'country', 'opw_id', 'coord_lon', 'coord_lat')
+    list_display = ('name_en', 'name_ru', 'name_uk', 'country', 'opw_id', 'coord_lon', 'coord_lat')
     list_filter = ['country']
     fields = ['name', 'country', 'opw_id', ('coord_lon', 'coord_lat')]
     search_fields = ['name', 'opw_id']
