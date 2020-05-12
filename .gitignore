@@ -1,6 +1,7 @@
-/.backup
-/.vscode
-/env
+.backup/
+.vscode/
+env/
+__pycache__/
 .env
 city.list.json
 *.mmdb
