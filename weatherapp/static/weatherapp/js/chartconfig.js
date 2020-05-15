@@ -1,4 +1,16 @@
 var chartConfig = function(xminvalue, xmaxvalue, temp_list, rain_list, pressure_list, winds_list, axisnames){
+    
+    var maxrain = 0;
+    for (i = 0; i < rain_list.length; ++i) {
+        if (rain_list[i][1] > maxrain) maxrain = rain_list[i][1];
+    }
+    if (maxrain < 5) {
+      maxrain = 5;
+    } else {
+      maxrain = Math.ceil(maxrain) + 1;
+    }
+    
+
     var myConfig = {
         graphset: [ {
         "type":"mixed",
@@ -8,13 +20,14 @@ var chartConfig = function(xminvalue, xmaxvalue, temp_list, rain_list, pressure_
                             "visible": false
                           },
                 },
+        "plotarea":{ 'margin': 'dynamic' },
         "scale-x":{
                   "min-value": xminvalue, 
                   "max-value": xmaxvalue, 
                   "step":10800000,
                   "transform":{
                                 "type":"date",
-                                "all":"%m/%d/%y<br>%H:%i" 
+                                "all":"%d.%mm.%y<br>%H:%i" 
                             },
                   "guide":{
                     "visible":true,
@@ -39,7 +52,7 @@ var chartConfig = function(xminvalue, xmaxvalue, temp_list, rain_list, pressure_
                   },
         'scale-y-2': {
                       'minValue': 0,
-                      'maxValue': 5,
+                      'maxValue': maxrain,
                       'label': {
                         'text': axisnames[1],
                         'fontSize': 14
@@ -103,13 +116,14 @@ var chartConfig = function(xminvalue, xmaxvalue, temp_list, rain_list, pressure_
                                 "visible": false
                               },
                     },
+            "plotarea":{ 'margin': 'dynamic' },
             "scale-x":{
                       "min-value": xminvalue, 
                       "max-value": xmaxvalue, 
                       "step":10800000,
                       "transform":{
                                     "type":"date",
-                                    "all":"%m/%d/%y<br>%H:%i" 
+                                    "all":"%d.%mm.%y<br>%H:%i"  
                                 },
                       "guide":{
                         "visible":true,

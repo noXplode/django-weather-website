@@ -92,17 +92,19 @@ def index(request):
 
     #c_ip = request.META['REMOTE_ADDR'] 
     c_ip = request.META.get('HTTP_X_REAL_IP')   #client ip discovery for pythonanywhere
-    #c_ip = ''      #ip for django dev server
+    #c_ip = ''  #ip for django dev server
 
     added_cities = request.session.get('added_cities', [])
 
     geoipdata = GetGeoIPCity(c_ip)
-    if geoipdata:           #if theres geoip data for users ip
+    if geoipdata and geoipdata['city'] is not None:           #if theres geoip city data for users ip
         if GetCityIdbyName(geoipdata['city']):      #looking for geoip cityname in db
             geoipdata['id'] = GetCityIdbyName(geoipdata['city'])
             if geoipdata['id'] not in added_cities:         #viewing geoip city by default
                 added_cities = [geoipdata['id']] + added_cities
                 request.session['added_cities'] = added_cities
+    else:
+        geoipdata = {}  #if theres no geoip data or no city in data
     
     #print(request.session['added_cities'])
 
@@ -266,11 +268,11 @@ def forecast(request, city_id):
         pressuredata = list(forecastdf['pressure'])
         windsdata = list(forecastdf['winds'])
 
-        xstart = timedata[0] // 86400000 * 86400000 
-        if timedata[-1] % 86400000 == 0:
+        xstart = timedata[0] // 43200000 * 43200000 
+        if timedata[-1] % 43200000 == 0:
              xfinish = timedata[-1]
         else:
-            xfinish = timedata[-1] // 86400000 * 86400000 + 86400000
+            xfinish = timedata[-1] // 43200000 * 43200000 + 43200000
 
         temp_list = [ [timedata[i], tempdata[i]] for i in range(0, len(tempdata)) ] 
         rain_list = [ [timedata[i], raindata[i]] for i in range(0, len(raindata)) ] 
