@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'dal',
     'dal_select2',
     'modeltranslation',
+    'django.contrib.sitemaps',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -145,4 +146,4 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-SECURE_REFERRER_POLICY = 'origin'
+SECURE_REFERRER_POLICY = 'same-origin'

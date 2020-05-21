@@ -1,6 +1,7 @@
 from django.db import models
 from .fields import JSONField
 from django.utils import timezone
+from django.urls import reverse
 
 class City(models.Model):
     name = models.CharField(max_length=100)
@@ -15,6 +16,9 @@ class City(models.Model):
 
     def __str__(self):
         return f'{self.name}, {self.country} ({round(self.coord_lon,2)}, {round(self.coord_lat,2)})'
+
+    def get_absolute_url(self): #user in xml sitemap
+        return reverse('weatherapp:forecast', args=[str(self.pk)])
 
 class Forecast(models.Model):
     city = models.ForeignKey(City, on_delete=models.CASCADE, null=False)

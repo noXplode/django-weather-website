@@ -13,17 +13,24 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from .sitemaps import ForecastSitemap, StaticSitemap
+from weatherapp.views import robots_txt
+
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.i18n import i18n_patterns
+from django.contrib.sitemaps.views import sitemap
+
+sitemaps = {'forecast': ForecastSitemap ,
+            'static': StaticSitemap}
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('i18n/', include('django.conf.urls.i18n')),
-    
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps, 'template_name': 'mysitemap.xml' }, name='sitemap'),
+    path('robots.txt', robots_txt),
 ]
 
 urlpatterns += i18n_patterns(
     path('', include('weatherapp.urls')),
 )
-

@@ -1,15 +1,16 @@
 {% extends "./index.html" %}
 {% load i18n %}
 {% block title %}
-<title>{% trans 'Узнай погоду в своем городе!' %} </title>
+<title>{% trans 'Актуальный и точный прогноз погоды в твоих городах!' %} </title>
+<meta name="description" content="{% trans 'Погода сейчас и точный прогноз на 5 дней по всем городам мира. Добавьте города и отслеживайте погоду и актуальный прогноз по ним.' %}">
 {% endblock %}
 
 {% block content %} 
 {% load static %}
 
   <div class="container">
-    <div class="row">
-      <div class="col-8 text-left">
+    <div class="row d-flex flex-column justify-content-xl-between flex-md-row justify-content-around">
+      <div class="col-md-8 text-left">
         {% if messages %}
         {% for message in messages %}
         <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-0" role="alert">
@@ -21,7 +22,7 @@
         {% endfor %}
         {% endif %}    
       </div>
-      <div class="col-4 mt-3 pb-3 text-right">
+      <div class="col-md-4 mt-3 pb-3 text-right">
         {% if geoipdata %}
         <b>{% trans 'Вы находитесть в:' %}</b> <a href="{% url 'weatherapp:forecast' geoipdata.id %}" > {{geoipdata.city}}, {{geoipdata.country_name}} </a>  <br>
         {% endif %}
@@ -33,9 +34,10 @@
   <div class="container mt-2">
     <div class="row d-flex flex-column justify-content-xl-between flex-lg-row justify-content-center ">
       <div class="col-lg-5 col-auto">
-        <div class="container mb-3 pb-2 ">
+        <div class="container mb-3 p-0 pb-2 ">
           <h1>{% trans 'Добавьте город' %}</h1>
-          <form action="{% url 'weatherapp:addcityform' %}" method="POST">
+          <p>{% trans 'и следите за погодой сразу в нескольких городах' %} </p>
+          <form class="px-2 pt-1" action="{% url 'weatherapp:addcityform' %}" method="POST">
             {% csrf_token %}
             {{form.as_p}}
             <!-- <input type="text" class="form-control" name="city" placeholder="Введите город"> -->
@@ -43,7 +45,7 @@
           </form>
         </div>
 
-        <div class="container my-1 my-xl-5">
+        <div class="container mt-1 mb-3 my-xl-5 d-none d-sm-block">
           <p class="mb-1">{% trans 'Популярные пункты' %}</p>
           <div class="row row-cols-3 align-items-start text-left border rounded bg-white ">
             {% for city in populars %}
@@ -60,41 +62,39 @@
         <ul class="list-group">
         {% for info in city_info %}
         
-          <li class="list-group-item list-group-item-danger mb-3 pb-0 rounded">
+          <li class="list-group-item list-group-item-danger mb-3 pt-1 pb-0 rounded">
             <div class="row">
-              <div class="col-3 text-center px-1">
-                <h4 class="mb-3" >{{info.city}}</h4> 
+              <div class="col-4 col-md-3 text-center px-1 pt-2">
+                <h4 class="mb-md-3" >{{info.city}}</h4> 
                 <div class="row d-flex justify-content-start flex-row ml-2">
                   <img src="https://openweathermap.org/img/w/{{info.icon}}.png" alt="{{info.descr}}" title="{{info.descr}}" width="60" height="60">
                   <p class="text-center mb-1 h5">{{info.temp}} °C</p>
                 </div>
                 <p class="text-center mb-1">{{info.descr}}</p>
               </div>
-              <div class="col-6">
+              <div class="col-5 col-md-6 pt-2 px-1 px-md-2 mt-0">
                 <table class="table table-bordered table-sm mb-0">
                   <tbody>
-                    <tr>  <td scope="row">{% trans 'Ощущается' %}</td>                  <td>{{info.temp_feels_like}} °C</td>            </tr>
-                    <tr>  <td scope="row">{% trans 'Давление (мм.рт.ст.)' %}</td>       <td>{{info.pressure}}</td>                 </tr>
-                    <tr>  <td scope="row">{% trans 'Влажность' %}</td>                  <td>{{info.hum}} %</td>                       </tr>
-                    <tr>  <td scope="row">{% trans 'Ветер' %}</td>   <td>{% if info.winddir %} {{info.winddir}} , {% endif %} {{info.winds}} {% if info.gust %} - {{info.gust}} {% endif %} {% trans 'м/с' %}</td>  </tr>
+                    <tr>  <td >{% trans 'Ощущается' %}</td>                  <td>{{info.temp_feels_like}} °C</td>            </tr>
+                    <tr>  <td >{% trans 'Давление (мм.рт.ст.)' %}</td>       <td>{{info.pressure}}</td>                 </tr>
+                    <tr>  <td >{% trans 'Влажность' %}</td>                  <td>{{info.hum}} %</td>                       </tr>
+                    <tr>  <td >{% trans 'Ветер' %}</td>   <td>{% if info.winddir %} {{info.winddir}} , {% endif %} {{info.winds}} {% if info.gust %} - {{info.gust}} {% endif %} {% trans 'м/с' %}</td>  </tr>
                     {% if info.rain %}
-                    <tr>  <td scope="row">{% trans 'Дождь' %}</td>                     <td>{{info.rain}} {% trans 'мм' %} </td>                       </tr>
+                    <tr>  <td >{% trans 'Дождь' %}</td>                     <td>{{info.rain}} {% trans 'мм' %} </td>                       </tr>
                     {% endif %}
 
                   </tbody>
                 </table>
               </div>
 
-              <div class="col-3 p-1 d-flex flex-column justify-content-around mb-2">
-                <a href="{% url 'weatherapp:deletecity' info.cityid %}">
-                  <button class="close" aria-label="{% trans 'Удалить город' %}">
-                    <span aria-hidden="true">&times;</span>
-                  </button> 
-                </a> 
+              <div class="col-3 d-flex flex-column justify-content-around mb-2 py-0 px-1">
+                <a href="{% url 'weatherapp:deletecity' info.cityid %}" class="btn-sm close mr-0 ml-auto p-0" aria-label="{% trans 'Удалить город' %}">
+                  <span aria-hidden="true">&times;</span>
+                </a>
                 <table class="table table-borderless table-sm mb-0 text-center">
                   <tbody>
-                    <tr>  <td scope="row">{% trans 'Рассвет' %}</td> <td>-</td>    <td>{{info.city_sunrise}}</td>  </tr>
-                    <tr>  <td scope="row">{% trans 'Закат' %}</td>    <td>-</td>    <td>{{info.city_sunset}}</td>   </tr>
+                    <tr>  <td >{% trans 'Рассвет' %} - {{info.city_sunrise}}</td>  </tr>
+                    <tr>  <td >{% trans 'Закат' %} - {{info.city_sunset}}</td>     </tr>
                   </tbody>
                 </table>
                 <a href="{% url 'weatherapp:forecast' info.cityid %}" class="btn btn-primary btn-sm mt-2">{% trans 'Прогноз на 5 дней' %}</a> 

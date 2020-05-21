@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-04 00:35+0300\n"
+"POT-Creation-Date: 2020-05-21 11:52+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,15 +21,15 @@ msgstr ""
 "100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || "
 "(n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
 
-#: .\weather\settings.py:123
+#: .\weather\settings.py:132
 msgid "Russian"
 msgstr ""
 
-#: .\weather\settings.py:124
+#: .\weather\settings.py:133
 msgid "English"
 msgstr ""
 
-#: .\weather\settings.py:125
+#: .\weather\settings.py:134
 msgid "Ukrainian"
 msgstr ""
 
@@ -38,178 +38,204 @@ msgid "Введите город"
 msgstr "Введіть місто"
 
 #: .\weatherapp\templates\weatherapp\forecast.html:4
-#: .\weatherapp\templates\weatherapp\forecast.html:11
+#: .\weatherapp\templates\weatherapp\forecast.html:12
 msgid "Прогноз погоды в городе"
 msgstr "Прогноз погоди у місті"
 
-#: .\weatherapp\templates\weatherapp\forecast.html:14
+#: .\weatherapp\templates\weatherapp\forecast.html:5
+msgid ""
+"Точный прогноз на каждые 3 часа в ближайшие 24 часа и на 5 дней в городе "
+msgstr ""
+"Точний прогноз на кожні 3 години в найближчі 24 години та на 5 днів у місті "
+
+#: .\weatherapp\templates\weatherapp\forecast.html:5
+msgid ". Добавьте города и отслеживайте погоду и актуальный прогноз по ним."
+msgstr ". Додайте міста та відстежуйте погоду й актуальний прогноз за ними."
+
+#: .\weatherapp\templates\weatherapp\forecast.html:15
 msgid "На сутки"
 msgstr "На добу"
 
-#: .\weatherapp\templates\weatherapp\forecast.html:15
+#: .\weatherapp\templates\weatherapp\forecast.html:16
 msgid "На 5 дней"
 msgstr "На 5 днів"
 
-#: .\weatherapp\templates\weatherapp\forecast.html:22
+#: .\weatherapp\templates\weatherapp\forecast.html:23
 msgid "Время"
 msgstr "Час"
 
-#: .\weatherapp\templates\weatherapp\forecast.html:23
+#: .\weatherapp\templates\weatherapp\forecast.html:24
 msgid "Состояние"
 msgstr "Умови"
 
-#: .\weatherapp\templates\weatherapp\forecast.html:24 .\weatherapp\views.py:269
+#: .\weatherapp\templates\weatherapp\forecast.html:25 .\weatherapp\views.py:281
 msgid "Температура, °C"
 msgstr "Температура, °C"
 
-#: .\weatherapp\templates\weatherapp\forecast.html:25 .\weatherapp\views.py:269
+#: .\weatherapp\templates\weatherapp\forecast.html:26 .\weatherapp\views.py:281
 msgid "Давление, мм.рт.ст."
 msgstr "Тиск, мм.рт.ст."
 
-#: .\weatherapp\templates\weatherapp\forecast.html:26
-#: .\weatherapp\templates\weatherapp\main.html:78
+#: .\weatherapp\templates\weatherapp\forecast.html:27
+#: .\weatherapp\templates\weatherapp\weather.html:80
 msgid "Влажность"
 msgstr "Вологість"
 
-#: .\weatherapp\templates\weatherapp\forecast.html:27 .\weatherapp\views.py:269
+#: .\weatherapp\templates\weatherapp\forecast.html:28 .\weatherapp\views.py:281
 msgid "Ветер, м/с"
 msgstr "Вітер, м/с"
 
-#: .\weatherapp\templates\weatherapp\forecast.html:28 .\weatherapp\views.py:269
+#: .\weatherapp\templates\weatherapp\forecast.html:29 .\weatherapp\views.py:281
 msgid "Осадки, мм"
 msgstr "Опади, мм"
 
-#: .\weatherapp\templates\weatherapp\index.html:32
+#: .\weatherapp\templates\weatherapp\index.html:40
 msgid "Главная"
 msgstr "Головна"
 
-#: .\weatherapp\templates\weatherapp\index.html:35
+#: .\weatherapp\templates\weatherapp\index.html:43
 msgid "Админка"
 msgstr "Адмінка"
 
-#: .\weatherapp\templates\weatherapp\index.html:36
-msgid "Загрузка городов"
-msgstr "Загрузка до бази"
+#: .\weatherapp\templates\weatherapp\index.html:44
+msgid "Скрипт"
+msgstr ""
 
-#: .\weatherapp\templates\weatherapp\main.html:4
-msgid "Узнай погоду в своем городе!"
-msgstr "Дізнайся про погоду в своєму місті!"
+#: .\weatherapp\templates\weatherapp\weather.html:4
+msgid "Актуальный и точный прогноз погоды в твоих городах!"
+msgstr "Актуальний і точний прогноз погоди в твоїх містах!"
 
-#: .\weatherapp\templates\weatherapp\main.html:26
+#: .\weatherapp\templates\weatherapp\weather.html:5
+msgid ""
+"Погода сейчас и точный прогноз на 5 дней по всем городам мира. Добавьте "
+"города и отслеживайте погоду и актуальный прогноз по ним."
+msgstr ""
+"Погода зараз і точний прогноз на 5 днів по всіх містах світу. Додайте міста "
+"і відстежуйте погоду й актуальний прогноз по ним."
+
+#: .\weatherapp\templates\weatherapp\weather.html:27
 msgid "Вы находитесть в:"
 msgstr "Ви знаходитесь в:"
 
-#: .\weatherapp\templates\weatherapp\main.html:37
+#: .\weatherapp\templates\weatherapp\weather.html:38
 msgid "Добавьте город"
 msgstr "Додайте місто"
 
-#: .\weatherapp\templates\weatherapp\main.html:42
+#: .\weatherapp\templates\weatherapp\weather.html:39
+msgid "и следите за погодой сразу в нескольких городах"
+msgstr "і стежте за погодою відразу в декількох містах"
+
+#: .\weatherapp\templates\weatherapp\weather.html:44
 msgid "Узнать погоду"
 msgstr "Погода зараз"
 
-#: .\weatherapp\templates\weatherapp\main.html:47
+#: .\weatherapp\templates\weatherapp\weather.html:49
 msgid "Популярные пункты"
 msgstr "Популярні місця"
 
-#: .\weatherapp\templates\weatherapp\main.html:59
+#: .\weatherapp\templates\weatherapp\weather.html:61
 msgid "Ваши города"
 msgstr "Ваші міста"
 
-#: .\weatherapp\templates\weatherapp\main.html:76
+#: .\weatherapp\templates\weatherapp\weather.html:78
 msgid "Ощущается"
 msgstr "Відчувається"
 
-#: .\weatherapp\templates\weatherapp\main.html:77
+#: .\weatherapp\templates\weatherapp\weather.html:79
 msgid "Давление (мм.рт.ст.)"
 msgstr "Тиск (мм.рт.ст.)"
 
-#: .\weatherapp\templates\weatherapp\main.html:81
-#: .\weatherapp\templates\weatherapp\main.html:83
+#: .\weatherapp\templates\weatherapp\weather.html:81
 msgid "Ветер"
 msgstr "Вітер"
 
-#: .\weatherapp\templates\weatherapp\main.html:81
-#: .\weatherapp\templates\weatherapp\main.html:83
+#: .\weatherapp\templates\weatherapp\weather.html:81
 msgid "м/с"
 msgstr "м/с"
 
-#: .\weatherapp\templates\weatherapp\main.html:87
+#: .\weatherapp\templates\weatherapp\weather.html:83
 msgid "Дождь"
 msgstr "Дощ"
 
-#: .\weatherapp\templates\weatherapp\main.html:87
+#: .\weatherapp\templates\weatherapp\weather.html:83
 msgid "мм"
 msgstr "мм"
 
-#: .\weatherapp\templates\weatherapp\main.html:96
+#: .\weatherapp\templates\weatherapp\weather.html:91
 msgid "Удалить город"
 msgstr "Видалити місто"
 
-#: .\weatherapp\templates\weatherapp\main.html:102
+#: .\weatherapp\templates\weatherapp\weather.html:96
 msgid "Рассвет"
 msgstr "Світанок"
 
-#: .\weatherapp\templates\weatherapp\main.html:103
+#: .\weatherapp\templates\weatherapp\weather.html:97
 msgid "Закат"
 msgstr "Захід"
 
-#: .\weatherapp\templates\weatherapp\main.html:106
+#: .\weatherapp\templates\weatherapp\weather.html:100
 msgid "Прогноз на 5 дней"
 msgstr "Прогноз на 5 днів"
 
-#: .\weatherapp\views.py:50 .\weatherapp\views.py:66
+#: .\weatherapp\views.py:52 .\weatherapp\views.py:68
 msgid "С"
 msgstr "П"
 
-#: .\weatherapp\views.py:52
+#: .\weatherapp\views.py:54
 msgid "СВ"
 msgstr "ПС"
 
-#: .\weatherapp\views.py:54
+#: .\weatherapp\views.py:56
 msgid "В"
 msgstr "С"
 
-#: .\weatherapp\views.py:56
+#: .\weatherapp\views.py:58
 msgid "ЮВ"
 msgstr "ПС"
 
-#: .\weatherapp\views.py:58
+#: .\weatherapp\views.py:60
 msgid "Ю"
 msgstr "П"
 
-#: .\weatherapp\views.py:60
+#: .\weatherapp\views.py:62
 msgid "ЮЗ"
 msgstr "ПЗ"
 
-#: .\weatherapp\views.py:62
+#: .\weatherapp\views.py:64
 msgid "З"
 msgstr "З"
 
-#: .\weatherapp\views.py:64
+#: .\weatherapp\views.py:66
 msgid "СЗ"
 msgstr "ПЗ"
 
-#: .\weatherapp\views.py:139
+#: .\weatherapp\views.py:148
 msgid "Ошибка запроса. Попробуйте позже"
 msgstr "Помилка запиту. Спробуй пізніше"
 
-#: .\weatherapp\views.py:141
+#: .\weatherapp\views.py:150
 msgid "Ошибка соединения"
 msgstr "Помилка з'єднання"
 
-#: .\weatherapp\views.py:143 .\weatherapp\views.py:176
-#: .\weatherapp\views.py:287
+#: .\weatherapp\views.py:152 .\weatherapp\views.py:185
+#: .\weatherapp\views.py:300
 msgid "Несуществующий id. Обратитесь к администратору"
 msgstr "Неіснуючий id. Зверніться до адміністратора"
 
-#: .\weatherapp\views.py:172
+#: .\weatherapp\views.py:181
 msgid "Вы добавили "
 msgstr "Ви додали "
 
-#: .\weatherapp\views.py:174
+#: .\weatherapp\views.py:183
 msgid " уже добавлен. Попробуйте другой"
 msgstr " вже додано. Спробуйте інше"
 
-#: .\weatherapp\views.py:184
+#: .\weatherapp\views.py:193
 msgid " удален"
 msgstr " видалено"
+
+#~ msgid "Загрузка городов"
+#~ msgstr "Загрузка до бази"
+
+#~ msgid "Узнай погоду в своем городе!"
+#~ msgstr "Дізнайся про погоду в своєму місті!"

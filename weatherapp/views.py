@@ -2,7 +2,7 @@ from .models import City, Forecast, Popularity
 from .forms import CityForm
 
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.gis.geoip2 import GeoIP2
 
@@ -298,13 +298,25 @@ def forecast(request, city_id):
         return render(request, 'weatherapp/forecast.html', context) 
     except City.DoesNotExist:
         messages.add_message(request, messages.WARNING , _('Несуществующий id. Обратитесь к администратору')) 
-        return HttpResponseRedirect( reverse('weatherapp:index' ) )  
+        return HttpResponseRedirect( reverse('weatherapp:index' ) ) 
+
+
+def robots_txt(request):    #for robots.txt
+    lines = [
+        "User-Agent: *",
+        "Disallow:",
+        "Sitemap: " +  request.build_absolute_uri(reverse('sitemap')),
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain") 
 
 def dosm(request):
     return HttpResponseRedirect(reverse('weatherapp:index'))
    
 
 def checkjson():    #checks city.list.json, gets {'county_alpha2_code': {'count': number, 'country_name' : str}}
+    with open('city.list.json', 'r', encoding='utf-8') as read_file:
+        data = json.load(read_file)
+    
     cntrs = {}
     for city_in_data in data:
         t = city_in_data['country'] 
@@ -391,14 +403,4 @@ def citypopulation(cityname, countrycode):  #countrycode ALPHA-2 format https://
     except:
         print(res.text)
         return 0
-    
-
-
-
-
-
-
-
-
-
 

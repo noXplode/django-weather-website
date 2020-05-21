@@ -1,12 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
+{% load static %}
+{% load alternate_hreflang %}
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  {% block title %}<title>Погода.тут Узнай погоду в своем городе</title>{% endblock %}
-  {% load static %}
-  <link rel="shortcut icon" href="{% static 'weatherapp/favicon.ico' %}"  type="image/png">
+  {% block title %}{% endblock %}
+
+  {% get_available_languages as languages %}
+  {% for lang_code, lang_name in languages %}
+      <link rel="alternate" hreflang="{{ lang_code }}" href="{% change_lang lang_code %}">
+  {% endfor %}
+
+  <link rel="icon" href="{% static 'favicon.ico' %}"  type="image/png">
+  <link rel="shortcut icon" href="{% static 'favicon.ico' %}"  type="image/png">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" type="text/css">
   <link rel="stylesheet" href="{% static 'weatherapp/css/main.css' %}" type="text/css">
   <script src="https://code.jquery.com/jquery-2.2.4.js"></script>
@@ -22,11 +32,11 @@
 </head>
 {% load i18n %}
 <body class="bg-light">
-  <div class="site-header border-bottom box-shadow p-1 py-sm-3">
+  <div class="site-header border-bottom box-shadow p-1 py-md-3">
 
-    <div class="container d-flex flex-column flex-md-row align-items-center p-2 ">
+    <div class="container d-flex flex-column flex-md-row align-items-center p-md-2 ">
       <a class="navbar-brand my-0 mr-md-auto font-weight-bold" href="{% url 'weatherapp:index' %}">Погода.тут</a>
-      <nav class="navbar my-2 my-md-0 mr-md-3">
+      <nav class="navbar my-0 mr-md-3">
         <a class="p-2" href="{% url 'weatherapp:index' %}">{% trans 'Главная' %}</a>
 
         {% if user.is_authenticated %}
@@ -39,7 +49,7 @@
           {% csrf_token %}
           <input name="next" type="hidden" value="{{ redirect_to }}">
             <select onchange="this.form.submit()" class="custom-select" name="language">
-                {% get_current_language as LANGUAGE_CODE %}
+                
                 {% get_available_languages as LANGUAGES %}
                 {% get_language_info_list for LANGUAGES as languages %}
                 {% for language in languages %}
@@ -65,7 +75,8 @@
   <div class="footer text-muted border-top box-shadow p-3 mb-5 mt-5">
     
     <div class="container">
-      &copy; Погода.тут 2020 <br/>
+       
+      &copy; Погода.тут 2020 <a class="pl-5" href="{% url 'sitemap' %}">XML Sitemap</a><br/>
       All	weather	and	forecast data is provided	under	terms	of CC BY-SA	4.0	International	license	by <a href="https://openweathermap.org/">Openweather	Ltd</a>. <br/>
       This product includes GeoLite2 data created by MaxMind, available from <a href="https://www.maxmind.com">maxmind.com</a>. <br/>
       
