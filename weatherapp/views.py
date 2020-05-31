@@ -10,7 +10,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import get_language
-#from django.db import connection
+from django.db import connections
 
 import requests
 from dal import autocomplete
@@ -205,6 +205,10 @@ def getforecast(c):
     else:
         print('web')
         res = getOPWforecast(c)
+
+    if Forecast.objects.count() > 100:  #made for pythnoanywhere restrict db growth
+        ids = Forecast.objects.values_list('pk', flat=True)[25:]
+        Forecast.objects.filter(pk__in = ids).delete()
     return res
     
 
@@ -310,6 +314,11 @@ def robots_txt(request):    #for robots.txt
     return HttpResponse("\n".join(lines), content_type="text/plain") 
 
 def dosm(request):
+    return HttpResponseRedirect(reverse('weatherapp:index'))
+
+def vacuum_db(request, using='default'):
+    cursor = connections[using].cursor()
+    cursor.execute("VACUUM")    
     return HttpResponseRedirect(reverse('weatherapp:index'))
    
 

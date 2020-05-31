@@ -11,6 +11,7 @@ urlpatterns = [
     path('addcity/<int:city_id>', views.addcity, name='addcity'),
     path('deletecity/<int:city_id>', views.deletecity, name='deletecity'),
     path('dosm/', views.dosm, name='dosm'),
+    path('dbvacuum/', views.vacuum_db, name='vacuum_db'),
     path('forecast/<int:city_id>', views.forecast, name='forecast'),
     path('city-autocomplete/', CityAutocomplete.as_view(), name='city-autocomplete')
 ]
