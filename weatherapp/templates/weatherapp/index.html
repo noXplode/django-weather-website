@@ -18,24 +18,15 @@
   <link rel="icon" href="{% static 'favicon.ico' %}"  type="image/png">
   <link rel="shortcut icon" href="{% static 'favicon.ico' %}"  type="image/png">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" type="text/css">
+  <link rel="stylesheet" href="{% static 'weatherapp/css/flag.min.css' %}" type="text/css">
   <link rel="stylesheet" href="{% static 'weatherapp/css/main.css' %}" type="text/css">
-  <script src="https://code.jquery.com/jquery-2.2.4.js"></script>
-  <script src="{% static 'weatherapp/js/bootstrap.js' %} "></script>
-  
-  <script>
-      $("div.alert").alert();
-
-      setTimeout(function() {
-      $('.alert').fadeOut('slow');}, 3000 );
-  </script>
   
 </head>
 {% load i18n %}
-<body class="bg-light">
-  <div class="site-header border-bottom box-shadow p-1 py-md-3">
-
+<body class="d-flex flex-column bg-light">
+  <header class="border-bottom box-shadow p-1 py-md-3">
     <div class="container d-flex flex-column flex-md-row align-items-center p-md-2 ">
-      <a class="navbar-brand my-0 mr-md-auto font-weight-bold" href="{% url 'weatherapp:index' %}">Погода.тут</a>
+      <a class="navbar-brand my-0 mr-md-auto font-weight-bold text-dark" href="{% url 'weatherapp:index' %}"><span class="text-danger">W</span>eather.all</a>
       <nav class="navbar my-0 mr-md-3">
         <a class="p-2" href="{% url 'weatherapp:index' %}">{% trans 'Главная' %}</a>
 
@@ -44,7 +35,6 @@
         <a class="p-2" href="{% url 'weatherapp:vacuum_db' %}">db compress</a>
         <a class="p-2" href="{% url 'weatherapp:dosm' %}">{% trans 'Скрипт' %}</a> 
         {% endif %} 
-        
         
         <form class="navbar-form form-inline" action="{% url 'set_language' %}" method="post">
           {% csrf_token %}
@@ -63,16 +53,11 @@
 
       </nav>
     </div>
-  </div>
-
-  
-
-  
+  </header>
 
   {% block content %}
   {% endblock %}
 
-  
   <div class="footer text-muted border-top box-shadow p-3 mb-5 mt-5">
     
     <div class="container">
@@ -83,8 +68,16 @@
       
     </div>
   </div>
-  
-  
+
+  <script src="https://code.jquery.com/jquery-2.2.4.js"></script>
+  <script src="{% static 'weatherapp/js/bootstrap.js' %} "></script>
+  <script>
+      $("div.alert").alert();
+
+      setTimeout(function() {
+      $('.alert').fadeOut('slow');}, 3000 );
+  </script>
+
 </body>
 </html> 
       

@@ -1,5 +1,5 @@
 # django-weather-website
-Weather forecast website. Multilingual website using Django, with autocomplete search field, IP geolocation. Adaptive design via Bootstrap. With usefull weather graph, XML sitemap for multilingual website.
+Weather forecast website. Multilingual website using Django, with autocomplete search field, IP geolocation. Adaptive design via Bootstrap. With useful weather forecast graph, XML sitemap for multilingual website.
 Live at [noxplode.pythonanywhere.com](https://noxplode.pythonanywhere.com/)
 
 GeoIP location will not work without GeoLite2 databases (GeoLite2-City.mmdb and GeoLite2-Country.mmdb)

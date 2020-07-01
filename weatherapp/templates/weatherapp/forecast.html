@@ -1,7 +1,7 @@
 {% extends "./index.html" %}
 {% load i18n %}
 {% block title %}
-<title>{% trans 'Прогноз погоды в городе' %} {{city.city_name}}</title>
+<title>{% trans 'Прогноз погоды в городе' %} {{city.city_name}}, {{city.city_country}}</title>
 <meta name="description" content="{% trans 'Точный прогноз на каждые 3 часа в ближайшие 24 часа и на 5 дней в городе ' %} {{city.city_name}} {% trans '. Добавьте города и отслеживайте погоду и актуальный прогноз по ним.' %}" >
 {% endblock %}
 
@@ -9,7 +9,7 @@
 {% load static %}
 
   <div class="container mt-4">
-    <h1 class="h1 mb-4" > {% trans 'Прогноз погоды в городе' %} {{city.city_name}} </h1> 
+    <h1 class="h1 mb-4" > {% trans 'Прогноз погоды в городе' %} {{city.city_name}} <i class="{{city.city_country|lower}} flag m-0"></i></h1> 
     <nav>
       <div class="nav nav-tabs" id="nav-tab" role="tablist">
         <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">{% trans 'На сутки' %}</a>

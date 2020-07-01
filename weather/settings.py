@@ -32,7 +32,7 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['noxplode.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -149,3 +149,4 @@ CSRF_COOKIE_SECURE = True
 SECURE_REFERRER_POLICY = 'same-origin'
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
+SESSION_SAVE_EVERY_REQUEST = True

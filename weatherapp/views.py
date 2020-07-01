@@ -71,12 +71,12 @@ def getwinddir(spd):
     return spdstr
 
 def getpopulars():
-    l = Popularity.objects.filter(pickeddate__gt=timezone.now() - timedelta(days=30))[:100]
+    l = Popularity.objects.filter(pickeddate__gt=timezone.now() - timedelta(days=365))[:30]
     l = list(set(l.values_list('city', flat=True)))
     c = []
     for i in l:
         t = City.objects.get(pk=i)
-        c.append([i, t.name])
+        c.append([i, t.name, t.country])
     return c
     
 
@@ -97,6 +97,8 @@ def index(request):
     added_cities = request.session.get('added_cities', [])
 
     geoipdata = GetGeoIPCity(c_ip)
+    if geoipdata:
+        print(geoipdata)
     if geoipdata and geoipdata['city'] is not None:           #if theres geoip city data for users ip
         if GetCityIdbyName(geoipdata['city']):      #looking for geoip cityname in db
             geoipdata['id'] = GetCityIdbyName(geoipdata['city'])
@@ -122,6 +124,7 @@ def index(request):
                     winfo = {
                         'cityid': cityid,
                         'city': c.name, #res2['name'], 
+                        'country': c.country, 
                         'descr': res2['weather'][0]['description'],
                         'icon': res2['weather'][0]['icon'],
                         'temp': res2['main']['temp'],
@@ -234,6 +237,7 @@ def forecast(request, city_id):
         
         city = {    'city_timeshift' : res['city']['timezone'],
                     'city_name' : c.name, # res['city']['name'],
+                    'city_country' : c.country, 
                     'city_sunrise' : datetime.utcfromtimestamp(res['city']['sunrise'] + res['city']['timezone']).strftime("%H:%M") ,
                     'city_sunset' : datetime.utcfromtimestamp(res['city']['sunset'] + res['city']['timezone']).strftime("%H:%M")        }
         
