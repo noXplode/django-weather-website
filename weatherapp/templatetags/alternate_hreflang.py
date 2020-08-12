@@ -1,5 +1,5 @@
 from django.template import Library
-from django.urls import resolve, translate_url
+from django.urls import translate_url
 
 register = Library()
 

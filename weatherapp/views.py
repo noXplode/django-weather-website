@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.gis.geoip2 import GeoIP2
-
+from django.db.models import Q
 from django.contrib import messages
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -25,7 +25,8 @@ class CityAutocomplete(autocomplete.Select2QuerySetView):       #autocomplete fi
     def get_queryset(self):
         qs = City.objects.all()
         if self.q:
-            qs = qs.filter(name_en__istartswith=self.q)|qs.filter(name_ru__istartswith=self.q.capitalize())|qs.filter(name_uk__istartswith=self.q.capitalize())
+            qs = qs.filter( Q(name_en__istartswith=self.q) | Q(name_ru__istartswith=self.q.capitalize()) | Q(name_uk__istartswith=self.q.capitalize()) ) 
+            # search in 3 languages
         return qs
 
 def GetCityIdbyName(cityname):
@@ -70,14 +71,10 @@ def getwinddir(spd):
         spdstr = ''
     return spdstr
 
-def getpopulars():
-    l = Popularity.objects.filter(pickeddate__gt=timezone.now() - timedelta(days=365))[:30]
-    l = list(set(l.values_list('city', flat=True)))
-    c = []
-    for i in l:
-        t = City.objects.get(pk=i)
-        c.append([i, t.name, t.country])
-    return c
+def getpopulars(days=365):  #gets last 30 picked cities for popular block
+    l = Popularity.objects.filter(pickeddate__gt=timezone.now() - timedelta(days=days))[:30]
+    l = list(set([i.city for i in l]))
+    return l
     
 
 def index(request):
@@ -114,9 +111,17 @@ def index(request):
     for cityid in added_cities:
         try:
             c = City.objects.get(pk=cityid)
+        except City.DoesNotExist:
+            messages.add_message(request, messages.WARNING , _('Несуществующий id. Обратитесь к администратору'))
+            continue
+        else:
             prms['id'] = c.opw_id     # OPW id
             try:
                 res = requests.get(url, params=prms)
+            except requests.ConnectionError:
+                messages.add_message(request, messages.WARNING , _('Ошибка соединения'))
+                continue
+            else:
                 #print(res.url)
                 if res.status_code == 200:
                     res2 = res.json()
@@ -149,13 +154,8 @@ def index(request):
                     view_cities.append(winfo)
                 else:
                     messages.add_message(request, messages.WARNING , _('Ошибка запроса. Попробуйте позже'))
-            except requests.ConnectionError:
-                messages.add_message(request, messages.WARNING , _('Ошибка соединения'))
-        except City.DoesNotExist:
-            messages.add_message(request, messages.WARNING , _('Несуществующий id. Обратитесь к администратору'))
-
-
-    form = CityForm()
+            
+    form = CityForm()   # autocomplete form
 
     populars = getpopulars()
 
@@ -174,9 +174,12 @@ def addcityform(request):
 
 
 def addcity(request, city_id):
-    added_cities = request.session.get('added_cities', [])
     try:
         c = City.objects.get(pk = city_id)
+    except City.DoesNotExist:
+        messages.add_message(request, messages.WARNING , _('Несуществующий id. Обратитесь к администратору'))
+    else:
+        added_cities = request.session.get('added_cities', [])
         if c.pk not in added_cities:
             added_cities.append(c.pk)
             request.session['added_cities'] = added_cities
@@ -184,9 +187,8 @@ def addcity(request, city_id):
             messages.add_message(request, messages.SUCCESS , str(_('Вы добавили ')) + c.name)
         else:
             messages.add_message(request, messages.INFO, c.name + str(_(' уже добавлен. Попробуйте другой')))
-    except City.DoesNotExist:
-            messages.add_message(request, messages.WARNING , _('Несуществующий id. Обратитесь к администратору'))
-    return HttpResponseRedirect(reverse('weatherapp:index'))
+    finally:
+        return HttpResponseRedirect(reverse('weatherapp:index'))
 
 def deletecity(request, city_id):
     added_cities = request.session.get('added_cities', [])
@@ -196,18 +198,18 @@ def deletecity(request, city_id):
         messages.add_message(request, messages.INFO, City.objects.get(pk = city_id).name + str(_(' удален')))
     return HttpResponseRedirect(reverse('weatherapp:index'))
 
-def getforecast(c):
+def getforecast(request, c):
     if c.forecast_set.all().order_by('-loadingtime').exists():
         f = c.forecast_set.all().order_by('-loadingtime')[0]
-        if f.is_actual() == True:
+        if f.is_actual():       #if latest forecast is actual load form db
             res = f.forecastdata
             print('db')
         else:
-            print('db to web')
-            res = getOPWforecast(c)
+            print('db to web')      #if latest forecast is outdated ask OPW
+            res = getOPWforecast(request, c)
     else:
-        print('web')
-        res = getOPWforecast(c)
+        print('web')    #if no forecast in db ask OPW
+        res = getOPWforecast(request, c)
 
     if Forecast.objects.count() > 100:  #made for pythnoanywhere restrict db growth
         ids = Forecast.objects.values_list('pk', flat=True)[25:]
@@ -215,7 +217,7 @@ def getforecast(c):
     return res
     
 
-def getOPWforecast(c):
+def getOPWforecast(request, c):
     current_lang = get_language()
     url = 'https://api.openweathermap.org/data/2.5/forecast'
     prms = {'id' : c.opw_id,
@@ -223,90 +225,101 @@ def getOPWforecast(c):
             'lang' : current_lang,
             'appid' : '130647fb83349ee17494923a6e848cc8' #API key
     }
-
-    res = requests.get(url, params=prms).json()
-    frct = Forecast(city=c, forecastdata=res)
-    frct.save()
-    return res
+    
+    try:
+        res = requests.get(url, params=prms).json()
+    except requests.ConnectionError:
+        messages.add_message(request, messages.WARNING , _('Ошибка соединения'))
+        res = {}
+    else:
+        frct = Forecast(city=c, forecastdata=res)
+        frct.save()
+    finally:
+        return res
 
 
 def forecast(request, city_id): 
     try:
         c = City.objects.get(pk=city_id)
-        res = getforecast(c)
-        
-        city = {    'city_timeshift' : res['city']['timezone'],
-                    'city_name' : c.name, # res['city']['name'],
-                    'city_country' : c.country, 
-                    'city_sunrise' : datetime.utcfromtimestamp(res['city']['sunrise'] + res['city']['timezone']).strftime("%H:%M") ,
-                    'city_sunset' : datetime.utcfromtimestamp(res['city']['sunset'] + res['city']['timezone']).strftime("%H:%M")        }
-        
-        forecast = []
-
-        for datapoint in res['list']:
-            winfo = {
-                    'timetext': datetime.utcfromtimestamp(datapoint['dt'] + city['city_timeshift']).strftime('%H:%M') ,
-                    'datetext': datetime.utcfromtimestamp(datapoint['dt'] + city['city_timeshift']).strftime('%d.%m') ,
-                    'timeunix': (datapoint['dt'] + city['city_timeshift']) * 1000 ,
-                    'temp': datapoint['main']['temp'],
-                    'icon': datapoint['weather'][0]['icon'],
-                    'pressure': round(datapoint['main']['pressure'] * 0.75006375541921),
-                    'humidity': datapoint['main']['humidity'],
-                    'descr': datapoint['weather'][0]['description'],
-                    'winds': datapoint['wind']['speed'],
-                    'winddir': getwinddir( datapoint['wind']['deg'] ) ,
-                }
-            if 'rain' in datapoint :
-                if '1h' in datapoint['rain']:
-                    winfo['rain'] = datapoint['rain']['1h']
-                else:
-                    winfo['rain'] = datapoint['rain']['3h']
-            else:
-                winfo['rain'] = 0
-
-            forecast.append(winfo)
-
-        oneday = forecast[:9]
-
-        forecastdf = pd.DataFrame(forecast)
-
-        tempdata = list(forecastdf['temp'])
-        timedata = list(forecastdf['timeunix'])
-        raindata = list(forecastdf['rain'])
-        pressuredata = list(forecastdf['pressure'])
-        windsdata = list(forecastdf['winds'])
-
-        xstart = timedata[0] // 43200000 * 43200000 
-        if timedata[-1] % 43200000 == 0:
-             xfinish = timedata[-1]
-        else:
-            xfinish = timedata[-1] // 43200000 * 43200000 + 43200000
-
-        temp_list = [ [timedata[i], tempdata[i]] for i in range(0, len(tempdata)) ] 
-        rain_list = [ [timedata[i], raindata[i]] for i in range(0, len(raindata)) ] 
-        pressure_list = [ [timedata[i], pressuredata[i]] for i in range(0, len(pressuredata)) ]
-        winds_list = [ [timedata[i], windsdata[i]] for i in range(0, len(windsdata)) ]
-        axis = [ _('Температура, °C') , _('Осадки, мм')  , _('Давление, мм.рт.ст.'), _('Ветер, м/с')]
-        
-        graph = { 'xstart' : xstart,
-                'xfinish' : xfinish,
-                'temp_list' : temp_list,
-                'rain_list' : rain_list,  
-                'pressure_list' : pressure_list,
-                'winds_list' : winds_list,
-                'axis' : axis
-                }
-
-        context = {
-            'city': city,
-            'frcst': oneday,
-            'graph': graph
-        }
-
-        return render(request, 'weatherapp/forecast.html', context) 
     except City.DoesNotExist:
         messages.add_message(request, messages.WARNING , _('Несуществующий id. Обратитесь к администратору')) 
-        return HttpResponseRedirect( reverse('weatherapp:index' ) ) 
+        return HttpResponseRedirect( reverse('weatherapp:index' ) )
+    else:
+        res = getforecast(request, c)
+        if res:
+            city = {    'city_timeshift' : res['city']['timezone'],
+                        'city_name' : c.name, # res['city']['name'],
+                        'city_country' : c.country, 
+                        'city_sunrise' : datetime.utcfromtimestamp(res['city']['sunrise'] + res['city']['timezone']).strftime("%H:%M") ,
+                        'city_sunset' : datetime.utcfromtimestamp(res['city']['sunset'] + res['city']['timezone']).strftime("%H:%M")        }
+            
+            forecast = []
+
+            for datapoint in res['list']:
+                winfo = {
+                        'timetext': datetime.utcfromtimestamp(datapoint['dt'] + city['city_timeshift']).strftime('%H:%M') ,
+                        'datetext': datetime.utcfromtimestamp(datapoint['dt'] + city['city_timeshift']).strftime('%d.%m') ,
+                        'timeunix': (datapoint['dt'] + city['city_timeshift']) * 1000 ,
+                        'temp': datapoint['main']['temp'],
+                        'icon': datapoint['weather'][0]['icon'],
+                        'pressure': round(datapoint['main']['pressure'] * 0.75006375541921),
+                        'humidity': datapoint['main']['humidity'],
+                        'descr': datapoint['weather'][0]['description'],
+                        'winds': datapoint['wind']['speed'],
+                        'winddir': getwinddir( datapoint['wind']['deg'] ) ,
+                    }
+                if 'rain' in datapoint :
+                    if '1h' in datapoint['rain']:
+                        winfo['rain'] = datapoint['rain']['1h']
+                    else:
+                        winfo['rain'] = datapoint['rain']['3h']
+                else:
+                    winfo['rain'] = 0
+
+                forecast.append(winfo)
+
+            oneday = forecast[:9]   #first 9 for 24 hours
+
+            forecastdf = pd.DataFrame(forecast)
+
+            tempdata = list(forecastdf['temp'])
+            timedata = list(forecastdf['timeunix'])     #graph x scale 
+            raindata = list(forecastdf['rain'])
+            pressuredata = list(forecastdf['pressure'])
+            windsdata = list(forecastdf['winds'])
+
+            xstart = timedata[0] // 43200000 * 43200000     #getting nearest 00:00 or 12:00 before first forecast in list UNIX format
+            if timedata[-1] % 43200000 == 0:    #getting nearest 00:00 or 12:00 after last forecast in list UNIX format
+                xfinish = timedata[-1]
+            else:
+                xfinish = timedata[-1] // 43200000 * 43200000 + 43200000
+
+            temp_list = [ [timedata[i], tempdata[i]] for i in range(0, len(tempdata)) ]     #x,y data for graph
+            rain_list = [ [timedata[i], raindata[i]] for i in range(0, len(raindata)) ] 
+            pressure_list = [ [timedata[i], pressuredata[i]] for i in range(0, len(pressuredata)) ]
+            winds_list = [ [timedata[i], windsdata[i]] for i in range(0, len(windsdata)) ]
+            axis = [ _('Температура, °C') , _('Осадки, мм')  , _('Давление, мм.рт.ст.'), _('Ветер, м/с')]
+            
+            graph = { 'xstart' : xstart,
+                    'xfinish' : xfinish,
+                    'temp_list' : temp_list,
+                    'rain_list' : rain_list,  
+                    'pressure_list' : pressure_list,
+                    'winds_list' : winds_list,
+                    'axis' : axis
+                    }
+
+            context = {
+                'city': city,
+                'frcst': oneday,
+                'graph': graph
+            }
+
+        else:
+            context = {}
+
+        return render(request, 'weatherapp/forecast.html', context) 
+    
 
 
 def robots_txt(request):    #for robots.txt

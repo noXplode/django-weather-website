@@ -9,6 +9,16 @@
 {% load static %}
 
   <div class="container mt-4">
+    {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-0" role="alert">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+    {% endfor %}
+    {% endif %}    
     <h1 class="h1 mb-4" > {% trans 'Прогноз погоды в городе' %} {{city.city_name}} <i class="{{city.city_country|lower}} flag m-0"></i></h1> 
     <nav>
       <div class="nav nav-tabs" id="nav-tab" role="tablist">

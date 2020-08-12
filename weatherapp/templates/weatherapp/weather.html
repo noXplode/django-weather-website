@@ -50,7 +50,7 @@
           <div class="row row-cols-3 align-items-center align-self-center text-center border rounded bg-white ">
             {% for city in populars %}
             <div class="col my-1"> 
-              <a class="" href="{% url 'weatherapp:addcity' city.0 %}"><i class="{{city.2|lower}} flag m-0"></i> {{city.1}}</a>
+              <a class="" href="{% url 'weatherapp:addcity' city.pk %}"><i class="{{city.country|lower}} flag m-0"></i> {{city.name}}</a>
             </div>
             {% endfor %}
           </div> 
