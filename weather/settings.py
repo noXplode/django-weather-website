@@ -28,6 +28,7 @@ if os.path.isfile(dotenv_file):
 
 # Update secret key
 SECRET_KEY = os.environ['SECRET_KEY']
+OPW_API_KEY = os.environ['OPW_API_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
