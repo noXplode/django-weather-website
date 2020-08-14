@@ -1,6 +1,7 @@
 from .models import City, Forecast, Popularity
 from .forms import CityForm
 
+from django.conf import settings
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
@@ -84,7 +85,7 @@ def index(request):
     prms = {'id' : '',
             'units' : 'metric',
             'lang' : current_lang,
-            'appid' : '130647fb83349ee17494923a6e848cc8' #API key
+            'appid' : settings.OPW_API_KEY #API key
     }
 
     #c_ip = request.META['REMOTE_ADDR'] 
@@ -223,7 +224,7 @@ def getOPWforecast(request, c):
     prms = {'id' : c.opw_id,
             'units' : 'metric',
             'lang' : current_lang,
-            'appid' : '130647fb83349ee17494923a6e848cc8' #API key
+            'appid' : settings.OPW_API_KEY #API key
     }
     
     try:
