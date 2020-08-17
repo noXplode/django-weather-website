@@ -27,7 +27,7 @@ class JSONField(models.TextField):
             if isinstance(value, str):
                 return json.loads(value)
         except ValueError:
-            pass
+            print('Error')
         return value
 
     def from_db_value(self, value, *args):
@@ -36,8 +36,10 @@ class JSONField(models.TextField):
     def get_db_prep_save(self, value, *args, **kwargs):
         if value == "":
             return None
-        if isinstance(value, dict):
+        if isinstance(value, dict) or isinstance(value, list):
             value = json.dumps(value, cls=DjangoJSONEncoder)
+        else:
+            print('Wrong datatype, must be a dictionary or a list') 
         return value
 
 

@@ -31,7 +31,7 @@ SECRET_KEY = os.environ['SECRET_KEY']
 OPW_API_KEY = os.environ['OPW_API_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['noxplode.pythonanywhere.com', 'localhost', '127.0.0.1']
 
@@ -148,8 +148,8 @@ MODELTRANSLATION_AUTO_POPULATE = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 SECURE_REFERRER_POLICY = 'same-origin'
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000

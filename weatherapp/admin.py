@@ -1,7 +1,7 @@
-from .models import City, Forecast, Popularity
+from .models import City, Weather, Forecast, Popularity
 
 from django.contrib import admin
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.core import serializers
 from django.contrib.sessions.models import Session
 
@@ -39,10 +39,16 @@ class CityAdmin(TranslationAdmin):
 
     export_as_csv.short_description = " CSV Export Selected"
     export_as_json.short_description = " JSON Export Selected"
-    
+
+class WeatherAdmin(admin.ModelAdmin):
+    list_display = ('city', 'loadingtime', 'is_actual')
+    fields = ['city', 'loadingtime', 'weatherdata']
+    readonly_fields = ['city', 'loadingtime']
+    search_fields = ['city']
+
 class ForecastAdmin(admin.ModelAdmin):
     list_display = ('city', 'loadingtime', 'is_actual')
-    fields = ['city', 'loadingtime', 'forecastdata']
+    fields = ['city', 'loadingtime', 'forecastdata', 'citydata']
     readonly_fields = ['city', 'loadingtime']
     search_fields = ['city']
 
@@ -50,6 +56,7 @@ class PopularityAdmin(admin.ModelAdmin):
     list_display = ('city', 'pickeddate')
 
 admin.site.register(City, CityAdmin)
+admin.site.register(Weather, WeatherAdmin)
 admin.site.register(Forecast, ForecastAdmin)
 admin.site.register(Popularity, PopularityAdmin)
 

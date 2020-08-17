@@ -1,4 +1,4 @@
-from .models import City, Forecast, Popularity
+from .models import City, Weather, Forecast, Popularity
 from .forms import CityForm
 
 from django.conf import settings
@@ -76,23 +76,38 @@ def getpopulars(days=365):  #gets last 30 picked cities for popular block
     l = Popularity.objects.filter(pickeddate__gt=timezone.now() - timedelta(days=days))[:30]
     l = list(set([i.city for i in l]))
     return l
-    
+
+def getweather(request, c):
+    if c.get_actual_weather(): #gets already loaded forecast from db
+        print('w db')
+        return c.get_actual_weather()
+    else:   
+        print('w web')        #if no forecast in database requesting OPW
+        current_lang = get_language()
+        url = 'https://api.openweathermap.org/data/2.5/weather'
+        prms = {'id' : c.opw_id,
+                'units' : 'metric',
+                'lang' : current_lang,
+                'appid' : settings.OPW_API_KEY #API key
+        }
+        
+        try:
+            res = requests.get(url, params=prms).json()
+        except requests.ConnectionError:
+            messages.add_message(request, messages.WARNING , _('Ошибка соединения'))
+            return None
+        else:
+            w = Weather(city=c, weatherdata=res)
+            w.save()
+            return w
 
 def index(request):
-
-    current_lang = get_language()
-    url = 'https://api.openweathermap.org/data/2.5/weather'
-    prms = {'id' : '',
-            'units' : 'metric',
-            'lang' : current_lang,
-            'appid' : settings.OPW_API_KEY #API key
-    }
 
     #c_ip = request.META['REMOTE_ADDR'] 
     c_ip = request.META.get('HTTP_X_REAL_IP')   #client ip discovery for pythonanywhere
     #c_ip = ''  #ip for django dev server
 
-    added_cities = request.session.get('added_cities', [])
+    added_cities = request.session.get('added_cities', [])      #getting user`s added cities list from sessions
 
     geoipdata = GetGeoIPCity(c_ip)
     if geoipdata:
@@ -116,46 +131,37 @@ def index(request):
             messages.add_message(request, messages.WARNING , _('Несуществующий id. Обратитесь к администратору'))
             continue
         else:
-            prms['id'] = c.opw_id     # OPW id
-            try:
-                res = requests.get(url, params=prms)
-            except requests.ConnectionError:
-                messages.add_message(request, messages.WARNING , _('Ошибка соединения'))
-                continue
-            else:
-                #print(res.url)
-                if res.status_code == 200:
-                    res2 = res.json()
-                    #print(res2)
-                    winfo = {
-                        'cityid': cityid,
-                        'city': c.name, #res2['name'], 
-                        'country': c.country, 
-                        'descr': res2['weather'][0]['description'],
-                        'icon': res2['weather'][0]['icon'],
-                        'temp': res2['main']['temp'],
-                        'temp_feels_like': res2['main']['feels_like'],
-                        'pressure': round(res2['main']['pressure'] * 0.75006375541921),
-                        'hum':res2['main']['humidity'],
-                        'winds': round(res2['wind']['speed']),
-                        'city_sunrise' : datetime.utcfromtimestamp(res2['sys']['sunrise'] + res2['timezone']).strftime("%H:%M") ,
-                        'city_sunset' : datetime.utcfromtimestamp(res2['sys']['sunset'] + res2['timezone']).strftime("%H:%M")      
-                    }
-                    if 'deg' in res2['wind'] :
-                        winfo['winddir'] = getwinddir( res2['wind']['deg'] )
+            res = getweather(request, c)
+            if res:
+                res2 = res.weatherdata
+                #print(res2)
+                winfo = {
+                    'cityid': cityid,
+                    'city': c.name, #res2['name'], 
+                    'country': c.country, 
+                    'descr': res2['weather'][0]['description'],
+                    'icon': res2['weather'][0]['icon'],
+                    'temp': res2['main']['temp'],
+                    'temp_feels_like': res2['main']['feels_like'],
+                    'pressure': round(res2['main']['pressure'] * 0.75006375541921),
+                    'hum':res2['main']['humidity'],
+                    'winds': round(res2['wind']['speed']),
+                    'city_sunrise' : datetime.utcfromtimestamp(res2['sys']['sunrise'] + res2['timezone']).strftime("%H:%M") ,
+                    'city_sunset' : datetime.utcfromtimestamp(res2['sys']['sunset'] + res2['timezone']).strftime("%H:%M")      
+                }
+                if 'deg' in res2['wind'] :
+                    winfo['winddir'] = getwinddir( res2['wind']['deg'] )
 
-                    if 'gust' in res2['wind'] and round(res2['wind']['gust']) > round(res2['wind']['speed']):
-                        winfo['gust'] = round(res2['wind']['gust'])
-                    
-                    if 'rain' in res2 :
-                        if '1h' in res2['rain']:
-                            winfo['rain'] = res2['rain']['1h']
-                        else:
-                            winfo['rain'] = res2['rain']['3h']
-                    view_cities.append(winfo)
-                else:
-                    messages.add_message(request, messages.WARNING , _('Ошибка запроса. Попробуйте позже'))
-            
+                if 'gust' in res2['wind'] and round(res2['wind']['gust']) > round(res2['wind']['speed']):
+                    winfo['gust'] = round(res2['wind']['gust'])
+                
+                if 'rain' in res2 :
+                    if '1h' in res2['rain']:
+                        winfo['rain'] = res2['rain']['1h']
+                    else:
+                        winfo['rain'] = res2['rain']['3h']
+                view_cities.append(winfo)
+                
     form = CityForm()   # autocomplete form
 
     populars = getpopulars()
@@ -200,44 +206,28 @@ def deletecity(request, city_id):
     return HttpResponseRedirect(reverse('weatherapp:index'))
 
 def getforecast(request, c):
-    if c.forecast_set.all().order_by('-loadingtime').exists():
-        f = c.forecast_set.all().order_by('-loadingtime')[0]
-        if f.is_actual():       #if latest forecast is actual load form db
-            res = f.forecastdata
-            print('db')
+    if c.get_actual_forecast(): #gets already loaded forecast from db
+        print('f db')
+        return c.get_actual_forecast()
+    else:   
+        print('f web')        #if no forecast in database requesting OPW
+        current_lang = get_language()
+        url = 'https://api.openweathermap.org/data/2.5/forecast'
+        prms = {'id' : c.opw_id,
+                'units' : 'metric',
+                'lang' : current_lang,
+                'appid' : settings.OPW_API_KEY #API key
+        }
+        
+        try:
+            res = requests.get(url, params=prms).json()
+        except requests.ConnectionError:
+            messages.add_message(request, messages.WARNING , _('Ошибка соединения'))
+            return None
         else:
-            print('db to web')      #if latest forecast is outdated ask OPW
-            res = getOPWforecast(request, c)
-    else:
-        print('web')    #if no forecast in db ask OPW
-        res = getOPWforecast(request, c)
-
-    if Forecast.objects.count() > 100:  #made for pythnoanywhere restrict db growth
-        ids = Forecast.objects.values_list('pk', flat=True)[25:]
-        Forecast.objects.filter(pk__in = ids).delete()
-    return res
-    
-
-def getOPWforecast(request, c):
-    current_lang = get_language()
-    url = 'https://api.openweathermap.org/data/2.5/forecast'
-    prms = {'id' : c.opw_id,
-            'units' : 'metric',
-            'lang' : current_lang,
-            'appid' : settings.OPW_API_KEY #API key
-    }
-    
-    try:
-        res = requests.get(url, params=prms).json()
-    except requests.ConnectionError:
-        messages.add_message(request, messages.WARNING , _('Ошибка соединения'))
-        res = {}
-    else:
-        frct = Forecast(city=c, forecastdata=res)
-        frct.save()
-    finally:
-        return res
-
+            frct = Forecast(city=c, forecastdata=res['list'], citydata=res['city'])
+            frct.save()
+            return frct
 
 def forecast(request, city_id): 
     try:
@@ -246,17 +236,19 @@ def forecast(request, city_id):
         messages.add_message(request, messages.WARNING , _('Несуществующий id. Обратитесь к администратору')) 
         return HttpResponseRedirect( reverse('weatherapp:index' ) )
     else:
-        res = getforecast(request, c)
-        if res:
-            city = {    'city_timeshift' : res['city']['timezone'],
-                        'city_name' : c.name, # res['city']['name'],
+        forecast = getforecast(request, c)
+        if forecast:
+            fd = forecast.forecastdata
+            cd = forecast.citydata
+            city = {    'city_timeshift' : cd['timezone'],
+                        'city_name' : c.name, # c['name'],
                         'city_country' : c.country, 
-                        'city_sunrise' : datetime.utcfromtimestamp(res['city']['sunrise'] + res['city']['timezone']).strftime("%H:%M") ,
-                        'city_sunset' : datetime.utcfromtimestamp(res['city']['sunset'] + res['city']['timezone']).strftime("%H:%M")        }
+                        'city_sunrise' : datetime.utcfromtimestamp(cd['sunrise'] + cd['timezone']).strftime("%H:%M") ,
+                        'city_sunset' : datetime.utcfromtimestamp(cd['sunset'] + cd['timezone']).strftime("%H:%M")        }
             
             forecast = []
 
-            for datapoint in res['list']:
+            for datapoint in fd:
                 winfo = {
                         'timetext': datetime.utcfromtimestamp(datapoint['dt'] + city['city_timeshift']).strftime('%H:%M') ,
                         'datetext': datetime.utcfromtimestamp(datapoint['dt'] + city['city_timeshift']).strftime('%d.%m') ,
@@ -326,7 +318,7 @@ def forecast(request, city_id):
 def robots_txt(request):    #for robots.txt
     lines = [
         "User-Agent: *",
-        "Disallow:",
+        "Disallow: /",
         "Sitemap: " +  request.build_absolute_uri(reverse('sitemap')),
     ]
     return HttpResponse("\n".join(lines), content_type="text/plain") 
@@ -335,6 +327,10 @@ def dosm(request):
     return HttpResponseRedirect(reverse('weatherapp:index'))
 
 def vacuum_db(request, using='default'):
+    if Forecast.objects.count() > 100:  #made for pythnoanywhere to restrict db growth
+        ids = Forecast.objects.values_list('pk', flat=True)[25:]
+        Forecast.objects.filter(pk__in = ids).delete()
+
     cursor = connections[using].cursor()
     cursor.execute("VACUUM")    
     return HttpResponseRedirect(reverse('weatherapp:index'))
