@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
 
     'weatherapp.apps.WeatherappConfig',
     'api.apps.ApiConfig',
@@ -95,7 +95,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        #'NAME': 'C:\db.sqlite3'
+        # 'NAME': 'C:\db.sqlite3'
     }
 }
 
@@ -154,3 +154,9 @@ SECURE_REFERRER_POLICY = 'same-origin'
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 SESSION_SAVE_EVERY_REQUEST = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
