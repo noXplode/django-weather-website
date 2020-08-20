@@ -9,6 +9,7 @@ from modeltranslation.admin import TranslationAdmin
 import csv
 import pprint
 
+
 class CityAdmin(TranslationAdmin):
     list_display = ('name_en', 'name_ru', 'name_uk', 'country', 'opw_id', 'coord_lon', 'coord_lat')
     list_filter = ['country']
@@ -16,7 +17,7 @@ class CityAdmin(TranslationAdmin):
     search_fields = ['name', 'opw_id']
     actions = ['export_as_csv', 'export_as_json']
 
-    def export_as_csv(self, request, queryset):     #model csv export method
+    def export_as_csv(self, request, queryset):     # model csv export method
 
         meta = self.model._meta
         field_names = [field.name for field in meta.fields]
@@ -27,10 +28,10 @@ class CityAdmin(TranslationAdmin):
 
         writer.writerow(field_names)
         for obj in queryset:
-            row = writer.writerow([getattr(obj, field) for field in field_names])
+            writer.writerow([getattr(obj, field) for field in field_names])
 
-        return response 
-    
+        return response
+
     def export_as_json(self, request, queryset):
         response = HttpResponse(content_type="application/json")
         response['Content-Disposition'] = 'attachment; filename=cities.json'
@@ -40,11 +41,13 @@ class CityAdmin(TranslationAdmin):
     export_as_csv.short_description = " CSV Export Selected"
     export_as_json.short_description = " JSON Export Selected"
 
+
 class WeatherAdmin(admin.ModelAdmin):
     list_display = ('city', 'loadingtime', 'is_actual')
     fields = ['city', 'loadingtime', 'weatherdata']
     readonly_fields = ['city', 'loadingtime']
     search_fields = ['city']
+
 
 class ForecastAdmin(admin.ModelAdmin):
     list_display = ('city', 'loadingtime', 'is_actual')
@@ -52,21 +55,23 @@ class ForecastAdmin(admin.ModelAdmin):
     readonly_fields = ['city', 'loadingtime']
     search_fields = ['city']
 
+
 class PopularityAdmin(admin.ModelAdmin):
     list_display = ('city', 'pickeddate')
-
-admin.site.register(City, CityAdmin)
-admin.site.register(Weather, WeatherAdmin)
-admin.site.register(Forecast, ForecastAdmin)
-admin.site.register(Popularity, PopularityAdmin)
 
 
 class SessionAdmin(admin.ModelAdmin):
     def _session_data(self, obj):
         return pprint.pformat(obj.get_decoded()).replace('\n', '<br>\n')
-    _session_data.allow_tags=True
+    _session_data.allow_tags = True
     list_display = ['session_key', '_session_data', 'expire_date']
     readonly_fields = ['_session_data']
     exclude = ['session_data']
-    date_hierarchy='expire_date'
+    date_hierarchy = 'expire_date'
+
+
+admin.site.register(City, CityAdmin)
+admin.site.register(Weather, WeatherAdmin)
+admin.site.register(Forecast, ForecastAdmin)
+admin.site.register(Popularity, PopularityAdmin)
 admin.site.register(Session, SessionAdmin)

@@ -21,14 +21,14 @@ from django.urls import path, include
 from django.conf.urls.i18n import i18n_patterns
 from django.contrib.sitemaps.views import sitemap
 
-sitemaps = {'forecast': ForecastSitemap ,
+sitemaps = {'forecast': ForecastSitemap,
             'static': StaticSitemap}
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('i18n/', include('django.conf.urls.i18n')),
-    path('sitemap.xml', sitemap, {'sitemaps': sitemaps, 'template_name': 'mysitemap.xml' }, name='sitemap'),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps, 'template_name': 'mysitemap.xml'}, name='sitemap'),
     path('robots.txt', robots_txt),
 ]
 

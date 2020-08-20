@@ -1,5 +1,3 @@
-import datetime
-
 from weatherapp.models import City
 
 from django.conf import settings
@@ -21,7 +19,7 @@ class ForecastSitemap(Sitemap):
             return attr(obj)
         return attr
 
-    def _urls(self, page, protocol, domain):  #modified Sitemap method from django.contrib.sitemaps
+    def _urls(self, page, protocol, domain):  # modified Sitemap method from django.contrib.sitemaps
         urls = []
         latest_lastmod = None
         all_items_lastmod = True  # track if all items have a lastmod
@@ -31,8 +29,7 @@ class ForecastSitemap(Sitemap):
             lastmod = self.__get('lastmod', item)
             if all_items_lastmod:
                 all_items_lastmod = lastmod is not None
-                if (all_items_lastmod and
-                        (latest_lastmod is None or lastmod > latest_lastmod)):
+                if (all_items_lastmod and (latest_lastmod is None or lastmod > latest_lastmod)):
                     latest_lastmod = lastmod
             url_info = {
                 'item': item,
@@ -41,13 +38,13 @@ class ForecastSitemap(Sitemap):
                 'changefreq': self.__get('changefreq', item),
                 'priority': str(priority if priority is not None else ''),
             }
-            #adding link translations to all LANGUAGES 
+            # adding link translations to all LANGUAGES
             translations = {}
             for lang_code in settings.LANGUAGES:
                 lng = lang_code[0]
                 translations[lng] = translate_url(loc, lng)
             url_info['translations'] = translations
-            #added
+            # added
             urls.append(url_info)
         if all_items_lastmod and latest_lastmod:
             self.latest_lastmod = latest_lastmod
@@ -55,7 +52,7 @@ class ForecastSitemap(Sitemap):
 
     def items(self):
         return City.objects.all()
-    
+
     def location(self, obj):
         return obj.get_absolute_url()
 

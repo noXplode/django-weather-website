@@ -39,8 +39,5 @@ class JSONField(models.TextField):
         if isinstance(value, dict) or isinstance(value, list):
             value = json.dumps(value, cls=DjangoJSONEncoder)
         else:
-            print('Wrong datatype, must be a dictionary or a list') 
+            print('Wrong datatype, must be a dictionary or a list')
         return value
-
-
-

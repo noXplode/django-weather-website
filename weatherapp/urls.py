@@ -15,7 +15,3 @@ urlpatterns = [
     path('forecast/<int:city_id>', views.forecast, name='forecast'),
     path('city-autocomplete/', CityAutocomplete.as_view(), name='city-autocomplete')
 ]
-
-
-
-
