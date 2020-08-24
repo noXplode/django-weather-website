@@ -11,6 +11,7 @@ class CitySerializer(serializers.ModelSerializer):
 
 class ForecastSerializer(serializers.ModelSerializer):
     city = CitySerializer(many=False, read_only=True)
+    forecastdata = serializers.DictField(allow_empty=True)
 
     class Meta:
         model = Forecast
@@ -19,6 +20,7 @@ class ForecastSerializer(serializers.ModelSerializer):
 
 class WeatherSerializer(serializers.ModelSerializer):
     city = CitySerializer(many=False, read_only=True)
+    weatherdata = serializers.DictField(allow_empty=True)
 
     class Meta:
         model = Weather

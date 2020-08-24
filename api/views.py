@@ -33,7 +33,7 @@ def forecast_api(request, cityid):
         return Response(status=status.HTTP_404_NOT_FOUND)
     else:
         forecast = getforecast(None, c)
-        serializer = ForecastSerializer(forecast, many=False)
+        serializer = ForecastSerializer(forecast, many=False, read_only=True)
         return Response(serializer.data)
 
 
@@ -45,5 +45,5 @@ def weather_api(request, cityid):
         return Response(status=status.HTTP_404_NOT_FOUND)
     else:
         weather = getweather(None, c)
-        serializer = WeatherSerializer(weather, many=False)
+        serializer = WeatherSerializer(weather, many=False, read_only=True)
         return Response(serializer.data)

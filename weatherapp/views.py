@@ -329,16 +329,18 @@ def robots_txt(request):    # for robots.txt
     return HttpResponse("\n".join(lines), content_type="text/plain")
 
 
-def dosm(request):
-    return HttpResponseRedirect(reverse('weatherapp:index'))
+def vacuum_db(request, using='default'):        # temporary use
+    olddate = timezone.now() - timedelta(seconds=1800)
+    ids = Weather.objects.filter(loadingtime__lt=olddate).values_list('pk', flat=True)
+    if ids:
+        Weather.objects.filter(pk__in=ids).delete()
 
-
-def vacuum_db(request, using='default'):
-    if Forecast.objects.count() > 100:  # made for pythnoanywhere to restrict db growth
-        ids = Forecast.objects.values_list('pk', flat=True)[25:]
+    olddate = timezone.now() - timedelta(seconds=1800)
+    ids = Forecast.objects.filter(loadingtime__lt=olddate).values_list('pk', flat=True)
+    if ids:
         Forecast.objects.filter(pk__in=ids).delete()
 
-    cursor = connections[using].cursor()
+    cursor = connections[using].cursor()        # made for pythnoanywhere to restrict db growth
     cursor.execute("VACUUM")
     return HttpResponseRedirect(reverse('weatherapp:index'))
 

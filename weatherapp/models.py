@@ -3,6 +3,8 @@ from .fields import JSONField
 from django.utils import timezone
 from django.urls import reverse
 
+from datetime import timedelta
+
 
 class City(models.Model):
     name = models.CharField(max_length=100)
@@ -47,7 +49,7 @@ class Weather(models.Model):
 
     def is_actual(self):
         timediff = timezone.now() - self.loadingtime
-        if timediff.seconds <= 1800:
+        if timediff <= timedelta(seconds=1800):
             return True
         else:
             return False
@@ -67,7 +69,7 @@ class Forecast(models.Model):
 
     def is_actual(self):
         timediff = timezone.now() - self.loadingtime
-        if timediff.seconds <= 3600:
+        if timediff <= timedelta(seconds=3600):
             return True
         else:
             return False
