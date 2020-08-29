@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'dal',
     'dal_select2',
     'modeltranslation',
-    'rest_framework',
     'django.contrib.sitemaps',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -50,8 +49,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-
+    'rest_framework',
+    'rest_framework.authtoken',
+    # project apps
     'weatherapp.apps.WeatherappConfig',
     'api.apps.ApiConfig',
 ]
@@ -158,5 +158,8 @@ SESSION_SAVE_EVERY_REQUEST = True
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ]
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
 }

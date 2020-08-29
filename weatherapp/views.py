@@ -33,7 +33,7 @@ class CityAutocomplete(autocomplete.Select2QuerySetView):       # autocomplete f
 
 def GetCityIdbyName(cityname):
     try:
-        res = City.objects.filter(name_en=cityname)
+        res = City.objects.filter(Q(name_en__iexact=cityname) | Q(name_ru__iexact=cityname.capitalize()) | Q(name_uk__iexact=cityname.capitalize()))
         return res[0].id
     except Exception:
         pass

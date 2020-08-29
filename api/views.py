@@ -1,6 +1,6 @@
 
 from weatherapp.models import City
-from weatherapp.views import getweather, getforecast
+from weatherapp.views import getweather, getforecast, GetCityIdbyName
 from .serializers import CitySerializer, WeatherSerializer, ForecastSerializer
 
 from rest_framework.decorators import api_view
@@ -12,7 +12,7 @@ from rest_framework import status
 def apiOverview(request):
     api_urls = {
         'cities list': '/city-list/',
-        'weather': '/weather/<int:pk>/',
+        'weather': '/weather/<str:city>/',
         'forecast': '/forecast/<int:pk>/'
     }
     return Response(api_urls)
@@ -38,9 +38,14 @@ def forecast_api(request, cityid):
 
 
 @api_view(['GET'])
-def weather_api(request, cityid):
+def weather_api(request, city):
+    if city.isdigit():
+        id = int(city)
+    else:
+        id = GetCityIdbyName(city)
+
     try:
-        c = City.objects.get(pk=cityid)
+        c = City.objects.get(pk=id)
     except City.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     else:
