@@ -1,6 +1,9 @@
 from .models import City, Weather, Forecast, Popularity
 
+from django import forms
 from django.contrib import admin
+from django.urls import path
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.core import serializers
 from django.contrib.sessions.models import Session
@@ -10,12 +13,37 @@ import csv
 import pprint
 
 
+class JsonImportForm(forms.Form):
+    json_file = forms.FileField()
+
+
 class CityAdmin(TranslationAdmin):
-    list_display = ('name_en', 'name_ru', 'name_uk', 'country', 'opw_id', 'coord_lon', 'coord_lat')
+    list_display = ('pk', 'name_en', 'name_ru', 'name_uk', 'country', 'opw_id', 'coord_lon', 'coord_lat')
     list_filter = ['country']
     fields = ['name', 'country', 'opw_id', ('coord_lon', 'coord_lat')]
     search_fields = ['name', 'opw_id']
     actions = ['export_as_csv', 'export_as_json']
+    change_list_template = "weatherapp/admin_action_buttons.html"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            path('import-json/', self.import_json, name='import_json'),
+        ]
+        return my_urls + urls
+
+    def import_json(self, request):
+        if request.method == "POST":
+            json_file = request.FILES["json_file"]
+            cnt = 0
+            for obj in serializers.deserialize("json", json_file):
+                cnt += 1
+                obj.save()
+            self.message_user(request, f"Your json file has been imported, {cnt} cities saved")
+            return redirect("..")
+            pass
+        form = JsonImportForm()
+        return render(request, "weatherapp/admin_json_form.html", {"form": form})
 
     def export_as_csv(self, request, queryset):     # model csv export method
 
